@@ -259,6 +259,13 @@ class RModulesJobService implements Job {
 					//Add the link to the output URL to the jobs object. We get the base URL from the job parameters.
 					jobResultsService[jobName]["ViewerURL"] = currentStep.value + "?jobName=" + jobName
 					break;
+				case "WEBSTART":
+					//Gather the jobs name.
+					def jobName = jobDetail.getName()
+				
+					//Add the link to the output URL to the jobs object. We get the base URL from the job parameters.
+					jobResultsService[jobName]["ViewerURL"] = currentStep.value + "?jobName=" + jobName
+					break;
 			}
 		}
 		} catch (Exception e) {

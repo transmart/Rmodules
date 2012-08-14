@@ -17,9 +17,12 @@
 function submitIGVJob(form)
 {
 	var selectedGenesIgv = document.getElementById("selectedGenesIgv").value;
-	
+	var igvChroms = document.getElementById("igvChroms").value;
+	var selectedSNPsIgv = document.getElementById("selectedSNPsIgv").value;
 	var formParams = {
-						selectedGenesIgv:selectedGenesIgv
+						selectedGenes:selectedGenesIgv,
+						chroms:igvChroms,
+						selectedSNPs:selectedSNPsIgv
 					};
 	
 	submitJob(formParams);
