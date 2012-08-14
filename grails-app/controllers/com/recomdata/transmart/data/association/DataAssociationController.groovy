@@ -52,7 +52,8 @@ class DataAssociationController {
 		servletContext.contextPath+pluginContextPath+'/js/plugin/BoxPlot.js',
 		servletContext.contextPath+pluginContextPath+'/js/plugin/IC50.js',
 		servletContext.contextPath+pluginContextPath+'/js/plugin/PCA.js',
-		servletContext.contextPath+pluginContextPath+'/js/plugin/MarkerSelection.js']
+		servletContext.contextPath+pluginContextPath+'/js/plugin/MarkerSelection.js',
+		servletContext.contextPath+pluginContextPath+'/js/plugin/IGV.js']
 		
 
 		
