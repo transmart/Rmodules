@@ -17,7 +17,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>subsetPanel.html</title>
+<title>IGV</title>
 
 <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
 <meta http-equiv="description" content="this is my page">
@@ -32,10 +32,7 @@
 		<table class="subsettable" style="margin: 10px;width:300px; border: 0px none; border-collapse: collapse;">
 			<tr>
 				<td colspan="4">
-					<span class='AnalysisHeader'>Variable Selection</span>
-					<a href='JavaScript:D2H_ShowHelp(1310,helpURL,"wndExternal",CTXT_DISPLAY_FULLHELP )'>
-						<img src="${resource(dir:'images',file:'help/helpicon_white.jpg')}" alt="Help" border=0 width=18pt style="margin-top:1pt;margin-bottom:1pt;margin-right:18pt;"/>
-					</a>					
+					<span class='AnalysisHeader'>Filter Selection</span>				
 				</td>			
 			</tr>	
 			<tr>
@@ -50,25 +47,26 @@
 					</p>
 					
 					<table class="searchform">
-						<tr><td style='white-space: nowrap'>IGV Datasets in Subset 1: </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>${snpDatasetNum_1}</td></tr>
-						<tr><td style='white-space: nowrap'>IGV Datasets in Subset 2: </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>${snpDatasetNum_2}</td></tr>
 						<tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td></tr>
 						<tr><td valign='top' style='white-space: nowrap'>Select Chromosomes:</td>
-						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+						<td>
 						<g:select name="igvChroms" id="igvChroms" from="${['ALL','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','X','Y']}" value="ALL" multiple="multiple"  size="5"></g:select>
 						</td>
 						</tr>
-						<tr><td valign='top' style='white-space: nowrap'>Selected Genes:</td>
-						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input type="text"  size="35" id="selectedGenesIgv" autocomplete="off" />
+						<tr><td valign='top' style='white-space: nowrap' colspan =2>Select Genes:</td>
+						</tr>
+						<tr>
+						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
 									  	<div id="divPathwayIgv" style="width:100%; font:11px tahoma, arial, helvetica, sans-serif"><br>Add a Gene:<br>
 									  		<input type="text"  size="35" id="searchPathwayIgv" autocomplete="off" />
-									  		<input type="hidden" id="selectedGenesAndIdIgv"/>
+									  		<input type="hidden" id="selectedGenesAndIdIgv"/>			  		
 									  	</div>
+									  	<br>Selected Genes:</br><input type="text"  size="35" id="selectedGenesIgv" autocomplete="off" />
 						</td>
 						</tr>
 						<tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td></tr>
-						<tr><td valign='top' style='white-space: nowrap'>Selected SNPs:</td>
-						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input type="text"  size="35" id="selectedSNPsIgv" autocomplete="off" /></td>
+						<tr><td valign='top' style='white-space: nowrap'>Selected SNPs:(with rs prefix)</td>
+						<td><input type="text"  size="35" id="selectedSNPsIgv" autocomplete="off" /></td>
 						</tr>
 					</table>
 					

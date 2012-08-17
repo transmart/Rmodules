@@ -49,6 +49,8 @@ class RModulesController {
 	 * Method that will schedule a Job 
 	 */
 	def scheduleJob = 	{
+		
+		params.appRealPath=servletContext.getRealPath ("/")
 		def jsonResult = RModulesService.scheduleJob(springSecurityService.getPrincipal().username,params)
 
 		response.setContentType("text/json")
