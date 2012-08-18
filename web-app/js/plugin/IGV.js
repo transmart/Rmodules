@@ -17,8 +17,14 @@
 function submitIGVJob(form)
 {
 	var selectedGenesIgv = document.getElementById("selectedGenesIgv").value;
-	var igvChroms = document.getElementById("igvChroms").value;
+	var igvChroms = 'ALL';// document.getElementById("igvChroms").value;
 	var selectedSNPsIgv = document.getElementById("selectedSNPsIgv").value;
+	
+	if(selectedSNPsIgv == '' && selectedGenesIgv=='')
+	{
+		Ext.Msg.alert('Missing filter!', 'Please select at least one gene or SNP in the filter');
+		return;
+	}
 	var formParams = {
 						selectedGenes:selectedGenesIgv,
 						chroms:igvChroms,

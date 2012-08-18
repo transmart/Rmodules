@@ -47,12 +47,12 @@
 					</p>
 					
 					<table class="searchform">
-						<tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td></tr>
+						<!-- <tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td></tr>
 						<tr><td valign='top' style='white-space: nowrap'>Select Chromosomes:</td>
-						<td>
+					 	<td>
 						<g:select name="igvChroms" id="igvChroms" from="${['ALL','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','X','Y']}" value="ALL" multiple="multiple"  size="5"></g:select>
 						</td>
-						</tr>
+						</tr> -->
 						<tr><td valign='top' style='white-space: nowrap' colspan =2>Select Genes:</td>
 						</tr>
 						<tr>
@@ -80,7 +80,7 @@
 		<table class="subsettable" style="margin: 10px;width:530px; border: 0px none; border-collapse: collapse;">
 			<tr>
 				<td align="center">
-					<input type="button" value="Run" onClick="submitIGVJob(this.form);"></input>
+					<input type="button" value="Find Data" onClick="submitIGVJob(this.form);"></input>
 				</td>
 			</tr>
 		</table>		
