@@ -134,4 +134,28 @@ class RModulesOutputRenderService {
 		return parseValueString
 	}
 	
+	/*
+	* This moves an image file to the temporary directory so it can be rendered to the user.
+	*/
+   def moveImageFile(currentFileLocation, newImageFileName, moveToDirectoryName)
+   {
+	   String tempImageFolder = config.RModules.temporaryImageFolder
+	   String tempImageJobFolder = "${tempImageFolder}" + File.separator + "${moveToDirectoryName}" + File.separator
+	   
+	   //For each of the image files we find, move them to the new directory.
+	   String tempImageLocation = "${tempImageJobFolder}" + File.separator + newImageFileName
+
+	   //Move the image to a location where we can actually render it.
+	   File oldImage = new File(currentFileLocation);
+	   File newImage = new File(tempImageLocation);
+	   //TODO move FileUtils to Core
+	   FileUtils.copyFile(oldImage,newImage)
+	   
+	   String currentLink = "${imageURL}${moveToDirectoryName}/${newImageFileName}"
+	   
+	   //Delete the old directory.
+	   
+	   return currentLink
+   }
+	
 }
