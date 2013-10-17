@@ -3,34 +3,34 @@ package com.recomdata.transmart.data.association
 import grails.converters.JSON
 import org.transmartproject.utils.FileUtils
 
-class aCGHgroupTestController {
+class RNASeqgroupTestController {
 
 	def RModulesOutputRenderService;
-    def grailsApplication
+	def grailsApplication;
+
+    final def DEFAULT_FIELDS = ['genes', 'logFC', 'logCPM', 'PValue', 'FDR'] as Set
+    final Set DEFAULT_NUMBER_FIELDS = ['logFC', 'logCPM', 'PValue', 'FDR'] as Set
 
     private getConfig() {
         grailsApplication.config.RModules
     }
 
-    final def DEFAULT_FIELDS = ['chromosome', 'cytoband', 'start', 'end', 'pvalue', 'fdr'] as Set
-    final Set DEFAULT_NUMBER_FIELDS = ['start', 'end', 'pvalue', 'fdr'] as Set
-
-	def aCGHgroupTestOutput =
+	def RNASeqgroupTestOutput =
 		{
-			def jobTypeName = "aCGHgroupTest"
+			def jobTypeName = "RNASeqgroupTest"
 
 			def imageLinks = new ArrayList<String>()
 
 			RModulesOutputRenderService.initializeAttributes(params.jobName, jobTypeName, imageLinks)
 
-			render (template: "/plugin/aCGHgroupTest_out", model: [zipLink: RModulesOutputRenderService.zipLink, imageLinks: imageLinks])
+			render (template: "/plugin/RNASeqgroupTest_out", model: [zipLink: RModulesOutputRenderService.zipLink, imageLinks: imageLinks])
 		}
 
 	/**
 	 * This function will return the image path
 	 */
 	def imagePath = {
-		def imagePath = "${config.imageURL}${params.jobName}/groups-test.png"
+		def imagePath = "${config.imageURL}${params.jobName}/rnaseq-groups-test.png"
 		render imagePath
 	}
 
@@ -55,7 +55,7 @@ class aCGHgroupTestController {
             render new JSON([error: 'jobName parameter is required. It should contains just alphanumeric characters and dashes.'])
             return
         }
-        def file = new File("${config.tempFolderDirectory}", "${params.jobName}/workingDirectory/groups-test.txt")
+        def file = new File("${config.tempFolderDirectory}", "${params.jobName}/workingDirectory/probability.txt")
         if (file.exists()) {
             def fields = params.fields?.split('\\s*,\\s*') as Set ?: DEFAULT_FIELDS
 
