@@ -182,7 +182,49 @@ var GroupTestResultGrid = Ext.extend(GenericAnalysisResultGrid, {
     }
 });
 
-/**
+var GroupTestResultGrid = Ext.extend(GenericAnalysisResultGrid, {
+
+    jobName : '',
+
+    constructor: function(config) {
+        GroupTestResultGrid.superclass.constructor.apply(this, arguments);
+        this.init();
+    },
+
+    init: function () {
+
+    },
+
+    /**
+     * Get selected rows from the grid
+     * @returns {*}
+     */
+    getSelectedRows: function () {
+        return this.getSelectionModel().getSelections();
+    },
+
+    downloadIntermediateResult: function (jobName) {
+
+        // clean up
+        try {
+            Ext.destroy(Ext.get('downloadIframe'));
+        }
+        catch(e) {}
+
+        // get the file
+        Ext.DomHelper.append(document.body, {
+            tag: 'iframe',
+            id:'downloadIframe',
+            frameBorder: 0,
+            width: 0,
+            height: 0,
+            css: 'display:none;visibility:hidden;height:0px;',
+            src: pageInfo.basePath+"/aCGHgroupTest/zipFile?jobName=" + jobName
+        });
+    }
+});
+
+    /**
  * This class represents the whole Group Test view
  * @type {*|Object}
  */
@@ -294,10 +336,10 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
 	},
 
 	isGroupFieldValid: function() {
-		if (this.inputBar.groupPanel.getConceptCodes().length < 2) {
+		if (this.inputBar.groupPanel.getNumberOfConceptCodes() < 2) {
 			Ext.MessageBox.show({
-				title: 'Number of groups',
-				msg: 'There should be selected more than one group.',
+                title: 'Incorrect number of groups',
+                msg: '[Group] input field should contain than one variables. Please add more variable.',
 				buttons: Ext.MessageBox.OK,
 				icon: Ext.MessageBox.ERROR
 			});
@@ -324,7 +366,6 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
 			method: 'POST',
 			success: function(result, request){
 
-				console.log('result', result.responseText);
 				imagePath = result.responseText;
 
 				_this.resultPanel = new GenericPlotPanel({
@@ -438,7 +479,7 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
                 Ext.destroy(Ext.get('intermediateGridPanel'));
 
                 // create new grid and render it
-                view.intermediateResultGrid  = new IntermediateResultGrid({
+                view.intermediateResultGrid  = new GroupTestResultGrid({
                     id: 'intermediateGridPanel',
                     title: 'Intermediate Result - Job Name: ' + jobName ,
                     renderTo: 'intermediateResultWrapper',
@@ -486,9 +527,6 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
 	},
 
 	onJobFinish: function(jobName, view) {
-		GLOBAL.CurrentSubsetIDs[1] = null;
-		GLOBAL.CurrentSubsetIDs[2] = null;
-
 		this.renderResults(jobName, view);
 	},
 
@@ -508,7 +546,6 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
 			var alternationVal =  alternationComponent.getSelectedValue();
 
 			this.alteration = this.translateAlteration(alternationVal);
-			console.log('this.alteration->', this.alteration);
 
 			// compose params
 			var formParams = {

@@ -121,34 +121,45 @@ function loadAnalysisPage(itemId, isCompletedJob, jobName) {
 	// translate group test module name ..
 	// TODO: Please change with the consistent naming for all related files and variable
 	if (itemId ==  'aCGHgroupTest' ) itemId = 'groupTestaCGH';
-	
-	// fyi ..  Ajax.Updater is a Prototype.js syntax
-	// will update 'variableSelection' div with whatever the response from
-	// the call
-	new Ajax.Updater('variableSelection', pageInfo.basePath+'/dataAssociation/variableSelection',
-	{
-		asynchronous:true,
-		evalScripts:true,
-		onComplete: function(e) { 
+	if (itemId ==  'RNASeqgroupTest' ) itemId = 'groupTestRNASeq';
 
-			// load the plugin view
-			loadPluginView(itemId);
+    // ajax call to
+    $j.ajax({
+        url : pageInfo.basePath+'/dataAssociation/variableSelection',
+        data : {analysis:itemId},
+        success : function (response, status) {
 
-			// if it's loading completed job then display the result as well
-			if (isCompletedJob) {
-				if (itemId == 'aCGHSurvivalAnalysis') {
-					survivalAnalysisACGHView.generateResultGrid(jobName, survivalAnalysisACGHView);
-				} else if (itemId == 'groupTestaCGH') {
-					groupTestView.renderResults(jobName, groupTestView);
-				}
-			}
-		},
-		parameters:{analysis:itemId}
-	});
+            // insert response into 'variableSelection' html element
+            $j('#variableSelection').html(response);
+
+            // load the plugin view
+            loadPluginView(itemId);
+
+            // if it's loading completed job then display the result as well
+            if (isCompletedJob) {
+                switch (itemId) {
+                    case 'aCGHSurvivalAnalysis' :
+                        survivalAnalysisACGHView.generateResultGrid(jobName, survivalAnalysisACGHView);
+                        break;
+                    case 'groupTestaCGH' :
+                        groupTestView.renderResults(jobName, groupTestView);
+                        break;
+                    case 'groupTestRNASeq' :
+                        RNASeqgroupTestView.renderResults(jobName, RNASeqgroupTestView);
+                        break;
+                    case 'acghFrequencyPlot' :
+                        frequencyPlotView.renderResults(jobName, frequencyPlotView);
+                        break;
+                }
+            }
+        }
+    }),
 
 	// update analysis element
 	Ext.get('analysis').dom.value = itemId;
-	Ext.fly('selectedAnalysis').update(module.text, false).removeClass('warning').addClass('selected');
+    if (module) {
+        Ext.fly('selectedAnalysis').update(module.text, false).removeClass('warning').addClass('selected');
+    }
 }
 
 function onItemClick(item) {
@@ -372,12 +383,6 @@ function dropOntoCategorySelection2(source, e, data, targetdiv)
 			//Grab the child node.
 			var child=data.node.childNodes[i];
 			
-			//This tells us whether it is a numeric or character node.
-			var val=child.attributes.oktousevalues;
-			
-			//Reset the alpha/numeric flag so we don't get the popup for entering a value.
-			child.attributes.oktousevalues = "N"; 
-			
 			//If this is a leaf node, add it.
 			if(child.leaf==true)
 			{
@@ -387,9 +392,6 @@ function dropOntoCategorySelection2(source, e, data, targetdiv)
 				//Set the flag indicating we had a leaf node.
 				foundLeafNode = true;
 			}
-			
-			//Set back to original value
-			child.attributes.oktousevalues=val;
 		}
 		//Adding this condition for certain nodes like Dosage and Response, where children of Dosage & Response are intentionally hidden 
 		if (data.node.childrenRendered && data.node.firstChild == null) {
@@ -402,20 +404,9 @@ function dropOntoCategorySelection2(source, e, data, targetdiv)
 		{
 			Ext.Msg.alert('No Nodes in Folder','When dragging in a folder you must select a folder that has leaf nodes directly under it.');
 		}				
-	}
-	else 
-	{
-		//This tells us whether it is a numeric or character node.
-		var val=data.node.attributes.oktousevalues;
-		
-		//Reset the alpha/numeric flag so we don't get the popup for entering a value.
-		data.node.attributes.oktousevalues="N";
-		
-		//Add the item to the input.
-		var concept = createPanelItemNew(targetdiv, convertNodeToConcept(data.node));
-		
-		//Set back to original value
-		data.node.attributes.oktousevalues=val;
+	} else {
+        //Add the item to the input.
+        var concept = createPanelItemNew(targetdiv, convertNodeToConcept(data.node));
 	}
 	return concept;
 } 
@@ -547,63 +538,51 @@ function waitWindowForAnalysis()
 	Ext.getCmp('dataAssociationPanel').body.mask("Running analysis...", 'x-mask-loading');
 }
 
+/**
+ * A scheduler to check the job status of a job. When the job status completed, cancelled or error it should stop and
+ * update the workflow status
+ * @param jobName
+ */
+function checkPluginJobStatus(jobName)
+{
+    var checkTask =	{
+        run: function () {
+            Ext.Ajax.request({
+                url : pageInfo.basePath+"/asyncJob/checkJobStatus",
+                method : 'POST',
+                timeout : '300000',
+                params: {jobName: jobName},
+                scope: this,
+                success : function (result, options) {
+                    var jobStatusInfo = Ext.util.JSON.decode(result.responseText);
+                    var status = jobStatusInfo.jobStatus;
+                    var viewerURL = jobStatusInfo.jobViewerURL;
+                    var fullViewerURL = pageInfo.basePath + viewerURL;
 
-//Called to check the heatmap job status 
-function checkPluginJobStatus(jobName)	
-{	
-	var secCount = 0;
-	var pollInterval = 1000;   // 1 second
-	
-	var updateJobStatus = function(){
-		secCount++;
-		Ext.Ajax.request(
-			{
-				url : pageInfo.basePath+"/asyncJob/checkJobStatus",
-				method : 'POST',
-				success : function(result, request)
-				{
-					var jobStatusInfo = Ext.util.JSON.decode(result.responseText);					 
-					var status = jobStatusInfo.jobStatus;
-					var errorType = jobStatusInfo.errorType;
-					var viewerURL = jobStatusInfo.jobViewerURL;
-					var altViewerURL = jobStatusInfo.jobAltViewerURL;
-					var exception = jobStatusInfo.jobException;
-					var resultType = jobStatusInfo.resultType;
-					var jobResults = jobStatusInfo.jobResults;
-					
-					if(status =='Completed') {
-						//Ext.getCmp('dataAssociationPanel').body.unmask();
-						Ext.TaskMgr.stop(checkTask);
-						
-						var fullViewerURL = pageInfo.basePath + viewerURL;
-						
-						//Set the results DIV to use the URL from the job.
-						Ext.get('analysisOutput').load({url : fullViewerURL,callback: loadModuleOutput});
-						
-						//Set the flag that says we run an analysis so we can warn the user if they navigate away.
-						GLOBAL.AnalysisRun = true;
-						
-					} else if(status == 'Cancelled' || status == 'Error') {
-						Ext.TaskMgr.stop(checkTask);						
-					}
-					updateWorkflowStatus(jobStatusInfo);
-				},
-				failure : function(result, request)
-				{
-					Ext.TaskMgr.stop(checkTask);
-					showWorkflowStatusErrorDialog('Failed', 'Could not complete the job, please contact an administrator');
-				},
-				timeout : '300000',
-				params: {jobName: jobName}
-			}
-		);
-  	}
+                    if (status =='Completed') {
+                        runner.stopAll();
+                        //Set the results DIV to use the URL from the job.
+                        Ext.get('analysisOutput').load({url : fullViewerURL, callback: loadModuleOutput});
+                        //Set the flag that says we run an analysis so we can warn the user if they navigate away.
+                        GLOBAL.AnalysisRun = true;
+                    } else if (status == 'Cancelled' || status == 'Error') {
+                        runner.stopAll();
+                    }
+                    updateWorkflowStatus(jobStatusInfo);
+                },
+                failure : function () {
+                    runner.stopAll();
+                    showWorkflowStatusErrorDialog('Failed', 'Could not complete the job, please contact an ' +
+                        'administrator');
+                }
+            });
+        },
+        interval: 1000
+    }
 
-	var checkTask =	{
-			run: updateJobStatus,
-	  	    interval: pollInterval	
-	}	
-	Ext.TaskMgr.start(checkTask);
+    //
+    var runner = new Ext.util.TaskRunner();  // define a runner
+    runner.start(checkTask); // start the task
 }
 
 function loadModuleOutput()
@@ -619,10 +598,16 @@ function loadModuleOutput()
 	}
 }
 
-function setupCategoricalItemsList(strDivSource,strDivTarget) {
+// TODO : To be moved as HighDimensional function
+function setupCategoricalItemsList (strDivSource, strDivTarget) {
 	// copy from the category div at top of page first and add drag handlers
 	var categoricalSourceDiv = Ext.get(strDivSource);
 	var categoricalTargetDiv = Ext.get(strDivTarget);
+
+    var _dropOntoBin = function (source, e, data) {
+        this.el.appendChild(data.ddel);
+        return true;
+    }
 
 	// clear it out first
 	while (categoricalTargetDiv.dom.hasChildNodes())
@@ -659,7 +644,7 @@ function setupCategoricalItemsList(strDivSource,strDivTarget) {
 		    return ret;
 		}
 	});
-	dropZone.notifyDrop = dropOntoBin;
+	dropZone.notifyDrop = _dropOntoBin;
 }
 
 function clearDataAssociation()
@@ -682,7 +667,6 @@ function clearDataAssociation()
 
 function loadCommonHighDimFormObjects(formParams, divName)
 {
-	
 	formParams[divName + "timepoints"]			= window[divName + 'timepoints1'];
 	formParams[divName + "samples"]				= window[divName + 'samples1'];
 	formParams[divName + "rbmPanels"]			= window[divName + 'rbmPanels1'];
@@ -704,22 +688,9 @@ function loadCommonHighDimFormObjects(formParams, divName)
 	formParams[divName + "PathwayName"]			= window[divName + 'pathwayName'];
 	
 	var mrnaData = false
+	var mirnaData = false
 	var snpData = false
-	
-	//Gene expression filters.
-	var fullGEXSampleType 	= "";
-	var fullGEXTissueType 	= "";
-	var fullGEXTime 		= "";
-	var fullGEXGeneList 	= "";
-	var fullGEXGPL 			= "";	
-	
-	//SNP Filters.
-	var fullSNPSampleType 	= "";
-	var fullSNPTissueType 	= "";
-	var fullSNPTime 		= "";	
-	var fullSNPGeneList 	= "";
-	var fullSNPGPL 			= "";
-	
+
 	var tempGeneList 		= window[divName + 'pathway'];
 	var tempMarkerType		= window[divName + 'markerType'];
 	var tempGPL				= window[divName + 'gplValues'];
@@ -729,16 +700,17 @@ function loadCommonHighDimFormObjects(formParams, divName)
 	var tempTissueType		= window[divName + 'tissuesValues'];
 	var tempTime			= window[divName + 'timepointsValues'];	
 	
-	//If we are using High Dimensional data we need to create variables that represent genes from both independent and dependent selections (In the event they are both of a single high dimensional type).
+	//If we are using High Dimensional data we need to create variables that represent genes from both independent
+	//and dependent selections (In the event they are both of a single high dimensional type).
 	//Check to see if the user selected GEX in the independent input.
 	if(tempMarkerType == "Gene Expression")
 	{
 		//The genes entered into the search box were GEX genes.
-		fullGEXGeneList 	= tempGeneList;
-		fullGEXSampleType 	= String(tempSampleType);
-		fullGEXTissueType 	= String(tempTissueType);
-		fullGEXTime			= String(tempTime);
-		fullGEXGPL			= String(tempGPL);
+		var fullGEXGeneList 	= tempGeneList;
+		var fullGEXSampleType 	= String(tempSampleType);
+		var fullGEXTissueType 	= String(tempTissueType);
+		var fullGEXTime			= String(tempTime);
+		var fullGEXGPL			= String(tempGPL);
 		
 		if(fullGEXSampleType == ",") 	fullGEXSampleType = ""
 		if(fullGEXTissueType == ",") 	fullGEXTissueType = ""
@@ -749,18 +721,27 @@ function loadCommonHighDimFormObjects(formParams, divName)
 		mrnaData = true;
 		
 		//Fix the platform to be something the R script expects.
-		tempMarkerType = "MRNA";
+		//tempMarkerType = "MRNA"; // after this is commented out it seems does not affect the R script, however marker
+                                   // type needs to be aligned with what has been defined in the gpl info table
+
+        formParams["gexpathway"]								= fullGEXGeneList;
+        formParams["gextime"]									= fullGEXTime;
+        formParams["gextissue"]									= fullGEXTissueType;
+        formParams["gexsample"]									= fullGEXSampleType;
+        formParams["gexgpl"]									= fullGEXGPL;
+
+        formParams["mrnaData"]									= mrnaData;
 	}
 	
 	//Check to see if the user selected SNP in the temp input.
 	if(tempMarkerType == "SNP")
 	{
 		//The genes entered into the search box were SNP genes.
-		fullSNPGeneList 	= tempGeneList;
-		fullSNPSampleType 	= String(tempSampleType);
-		fullSNPTissueType 	= String(tempTissueType);
-		fullSNPTime 		= String(tempTime);
-		fullSNPGPL			= String(tempGPL);
+		var fullSNPGeneList 	= tempGeneList;
+		var fullSNPSampleType 	= String(tempSampleType);
+		var fullSNPTissueType 	= String(tempTissueType);
+		var fullSNPTime 		= String(tempTime);
+		var fullSNPGPL			= String(tempGPL);
 		
 		if(fullSNPSampleType == ",") 	fullSNPSampleType = ""
 		if(fullSNPTissueType == ",") 	fullSNPTissueType = ""
@@ -769,30 +750,27 @@ function loadCommonHighDimFormObjects(formParams, divName)
 		
 		//This flag will tell us to write the SNP text file.
 		snpData = true;
+
+        formParams["snppathway"]								= fullSNPGeneList;
+        formParams["snptime"]									= fullSNPTime;
+        formParams["snptissue"]									= fullSNPTissueType;
+        formParams["snpsample"]									= fullSNPSampleType;
+        formParams["snpgpl"]									= fullSNPGPL;
+        formParams["snpData"]									= snpData;
 	}
+
+    if(tempMarkerType == "QPCR MIRNA")
+    {
+        //This flag will tell us to write the GEX text file.
+        mirnaData = true;
+        formParams["mirnaData"]									= mrnaData;
+    }
 		
 	//If we don't have a platform, fill in Clinical.
 	if(tempPlatform == null || tempPlatform == "") tempMarkerType = "CLINICAL"	
 		
 	formParams[divName + "Type"]							= tempMarkerType;
 	formParams[divName + "Pathway"]							= tempGeneList;
-	
-	formParams["gexpathway"]								= fullGEXGeneList;
-	formParams["gextime"]									= fullGEXTime;
-	formParams["gextissue"]									= fullGEXTissueType;
-	formParams["gexsample"]									= fullGEXSampleType;
-	formParams["gexgpl"]									= fullGEXGPL;
-	
-	formParams["snppathway"]								= fullSNPGeneList;
-	formParams["snptime"]									= fullSNPTime;
-	formParams["snptissue"]									= fullSNPTissueType;
-	formParams["snpsample"]									= fullSNPSampleType;
-	formParams["snpgpl"]									= fullSNPGPL;
-	
-	formParams["mrnaData"]									= mrnaData;
-	formParams["mrnaData"]									= mrnaData;
-	formParams["snpData"]									= snpData;
-
 }
 
 function loadCommonHeatmapImageAttributes(formParams)

@@ -14,10 +14,31 @@
 * limitations under the License.
 ******************************************************************/
 
+def forkSettingsRun = [
+        minMemory: 1536,
+        maxMemory: 4096,
+        maxPerm:   384,
+        debug:     false,
+]
+def forkSettingsOther = [
+        minMemory: 256,
+        maxMemory: 1024,
+        maxPerm:   384,
+        debug:     false,
+]
+/* We can't enable forked run-app now because of a bug in Grails:
+ * http://stackoverflow.com/questions/19371859 */
+grails.project.fork = [
+        test:    [ *:forkSettingsOther, daemon: true ],
+        run:     forkSettingsRun,
+        war:     forkSettingsRun,
+        console: forkSettingsOther ]
+
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
-//grails.project.war.file = "target/${appName}-${appVersion}.war"
+
+grails.project.dependency.resolver = "maven"
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
@@ -27,32 +48,37 @@ grails.project.dependency.resolution = {
     log "warn"
 
     repositories {
-        grailsPlugins()
-        grailsHome()
         grailsCentral()
 
-        mavenLocal()
         mavenCentral()
-        mavenRepo([
-                name: 'repo.transmartfoundation.org-public',
-                root: 'https://repo.transmartfoundation.org/content/repositories/public/',
-        ])
+        mavenRepo 'https://repo.transmartfoundation.org/content/repositories/public/'
     }
     dependencies {
         compile 'net.sf.opencsv:opencsv:2.3'
-        compile "org.rosuda:Rserve:1.7.3"
+        compile 'org.rosuda:Rserve:1.7.3'
+        compile 'org.mapdb:mapdb:0.9.7'
+
+        /* serializable ImmutableMap only on guava 16 */
+        compile group: 'com.google.guava', name: 'guava', version: '16.0-dev-20140115-68c8348'
+        compile 'org.transmartproject:transmart-core-api:1.0-SNAPSHOT'
+
+        /* compile instead of test due to technical limitations
+         * (referenced from resources.groovy) */
+        runtime 'org.gmock:gmock:0.8.3', {
+            transitive = false /* don't bring groovy-all */
+            export     = false
+        }
+        test('org.hamcrest:hamcrest-library:1.3',
+                'org.hamcrest:hamcrest-core:1.3') {
+            export     = false
+        }
     }
 
     plugins {
-        compile ":hibernate:$grailsVersion"
-        compile ":quartz:0.4.2"
-        runtime ":resources:1.2"
+        build(':release:3.0.1',
+              ':rest-client-builder:1.0.3') { export = false }
 
-        build(":tomcat:$grailsVersion",
-              ":release:2.2.1",
-              ":rest-client-builder:1.0.3",
-              ) {
-            exported: false
-        }
+        compile ':quartz:1.0-RC2'
+        runtime ':resources:1.2.1'
     }
 }

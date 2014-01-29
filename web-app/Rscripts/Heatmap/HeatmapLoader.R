@@ -25,7 +25,7 @@ meltData = TRUE,
 imageWidth = 1200,
 imageHeight = 800,
 pointsize = 15,
-maxDrawNumber = 50
+maxDrawNumber = Inf
 )
 {
 
@@ -85,13 +85,13 @@ maxDrawNumber = 50
                 sd_rows_mRNA<-apply (mRNAData,1,sd,na.rm=T)
                 mRNAData<-mRNAData[!is.na(sd_rows_mRNA),]                                      # remove markers where sd is NA
                 sd_rows_mRNA<-sd_rows_mRNA[!is.na(sd_rows_mRNA)]
-                cutoff_sd<- sd_rows_mRNA[order(sd_rows_mRNA,decreasing = T)][maxDrawNumber+1]      # filter by SD, draw only the top maxDrawNumber
-                mRNAData<-mRNAData[sd_rows_mRNA>cutoff_sd,]
+                indices_to_include <- order(sd_rows_mRNA,decreasing = T)[1:maxDrawNumber]     # filter by SD, keep only the top maxDrawNumber
+                mRNAData <- mRNAData[indices_to_include,]
         }
 
         colcolor<-colnames(mRNAData)                                                           # assign colors for different subset
-        colcolor[grep("S1",colnames(mRNAData))]<-"orange"
-        colcolor[grep("S2",colnames(mRNAData))]<-"yellow"
+        colcolor[grep("^S1_|_S1_|_S1$",colnames(mRNAData))]<-"orange"
+        colcolor[grep("^S2_|_S2_|_S2$",colnames(mRNAData))]<-"yellow"
 
         mean_reorder<-rowMeans(mRNAData[,colcolor=="orange" ], na.rm = T)                      # reorder the data by rowmean of Subset 1
         mRNAData<-mRNAData[order(mean_reorder,decreasing = T),]
@@ -112,8 +112,7 @@ maxDrawNumber = 50
                             ColSideColors=colcolor,
 #                           col=cm.colors(800),
                        	    col=greenred(800),
-                            margins=c(5,5),
-                            labCol=NA,
+                            margins=c(15, 15),
                             )
 
 		# add a legend to heatmap.
