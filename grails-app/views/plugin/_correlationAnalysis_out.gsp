@@ -24,16 +24,15 @@
 		${correlationData}
 				
 		<br />
-		<br />	
-		
-		<g:each var="location" in="${imageLocations}">
-	    	<img src='${location}'  width="900" height="600"/> <br />
-		</g:each>
+		<br />
+
+        <g:each var="location" in="${imageLocations}">
+            <g:img file="${location}"></g:img>
+        </g:each>
 
 		<br />
-		<br />	
-		
-		<a class='AnalysisLink' href="${zipLocation}">Download raw R data</a>
+		<br />
+        <a href="${resource(file: zipLink)}" class="downloadLink">Download raw R data</a>
 		
 	</form>
 </body>

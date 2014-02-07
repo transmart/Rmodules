@@ -17,19 +17,17 @@
 package com.recomdata.transmart.data.association.asynchronous
 
 import com.recomdata.transmart.util.RUtil
-import groovy.util.ConfigObject;
-
-import java.io.File;
-import java.lang.reflect.UndeclaredThrowableException;
-
-import org.apache.commons.lang.StringUtils;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.Rserve.*;
+import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.quartz.Job
+import org.quartz.JobExecutionContext
+import org.quartz.JobExecutionException
+import org.rosuda.REngine.REXP
+import org.rosuda.REngine.Rserve.RConnection
+import org.rosuda.REngine.Rserve.RserveException
+
+import java.lang.reflect.UndeclaredThrowableException
 
 class RModulesJobService implements Job {
 
@@ -39,6 +37,7 @@ class RModulesJobService implements Job {
 	def ctx = AH.application.mainContext
 	def springSecurityService = ctx.springSecurityService
 	def jobResultsService = ctx.jobResultsService
+	def asyncJobService = ctx.asyncJobService
 	def i2b2HelperService = ctx.i2b2HelperService
 	def i2b2ExportHelperService = ctx.i2b2ExportHelperService
 	def snpDataService = ctx.snpDataService
@@ -101,6 +100,7 @@ class RModulesJobService implements Job {
 			jobDataMap.getKeys().each {_key ->
 				jobInfoFile.append("\t${_key} -> ${jobDataMap[_key]}" + System.getProperty("line.separator"))
 			}
+
 		} catch (Exception e) {
 			throw new Exception('Failed to create Temporary Directories and Job Info File, maybe there is not enough space on disk. Please contact an administrator.', e);
 		}
@@ -137,6 +137,7 @@ class RModulesJobService implements Job {
 				errorMsg = "There was an error running your job \'${jobName}\'. Please contact an administrator."
 			}
 			jobResultsService[jobName]["Exception"] = errorMsg
+            updateStatusAndCheckIfJobCancelled(jobName, "Error")
 			return
 		}
 
@@ -217,7 +218,7 @@ class RModulesJobService implements Job {
 							}
 						}
 					} catch (Exception e) {
-						println("Failed to FTP PUT the ZIP file");
+						log.error("Failed to FTP PUT the ZIP file", e);
 					}
 					break
 				case "R":
@@ -361,13 +362,16 @@ class RModulesJobService implements Job {
 		   log.debug(status)
 	   }
 
-	   boolean jobCancelled = false
-	   //log.debug("Checking to see if the user cancelled the job")
-	   if (jobResultsService[jobName]["Status"] == "Cancelled")	{
+       def viewerURL = jobResultsService[jobName]["ViewerURL"]
+       def altViewerURL = jobResultsService[jobName]["AltViewerURL"]
+       def jobResults = jobResultsService[jobName]["Results"]
+       asyncJobService.updateStatus(jobName, status, viewerURL, altViewerURL, jobResults)
+
+	   boolean jobCancelled = jobResultsService[jobName]["Status"] == "Cancelled"
+	   if (jobCancelled)	{
 		   log.warn("${jobName} has been cancelled")
-		   return jobCancelled
 	   }
 
-	   return jobCancelled
+	   jobCancelled
    }
 }

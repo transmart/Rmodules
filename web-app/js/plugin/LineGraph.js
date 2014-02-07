@@ -1,76 +1,338 @@
-/*************************************************************************
-  * tranSMART - translational medicine data mart
- * 
- * Copyright 2008-2012 Janssen Research & Development, LLC.
- * 
- * This product includes software developed at Janssen Research & Development, LLC.
- * 
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
- * as published by the Free Software  * Foundation, either version 3 of the License, or (at your option) any later version, along with the following terms:
- * 1.	You may convey a work based on this program in accordance with section 5, provided that you retain the above notices.
- * 2.	You may convey verbatim copies of this program code as you receive it, in any medium, provided that you retain the above notices.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS    * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- *
- ******************************************************************/
-function submitLineGraphJob(form){
-	var dependentVariableConceptCode = readConceptVariables("divDependentVariable");
-	var independentVariableConceptCode = readConceptVariables("divIndependentVariable");
-	var groupByVariableConceptCode = readConceptVariables("divGroupByVariable");
-	var variablesConceptCode = dependentVariableConceptCode+"|"+groupByVariableConceptCode;
-	
-	var formParams = {variablesConceptPaths:variablesConceptCode, 
-			dependentVariable:dependentVariableConceptCode,
-			independentVariable:independentVariableConceptCode,
-			groupByVariable:groupByVariableConceptCode,
-			graphType:form.graphType.value};
-
-	//Make sure user entered a group and a concept.
-	if(groupByVariableConceptCode == '')
-	{
-		Ext.Msg.alert('Missing input!', 'Please drag at least one concept into the Group Concepts variable box.');
-		return;
-	}
-	
-	if(dependentVariableConceptCode == '')
-	{
-		Ext.Msg.alert('Missing input!', 'Please drag at least one concept into the Time/Measurement variable box.');
-		return;
-	}	
-
-	submitJob(formParams);
+/**
+ * Where everything starts
+ */
+function loadLineGraphView() {
+    lineGraphView.register_drag_drop();
+    lineGraphView.clear_high_dimensional_input('divGroupByVariable');
+    lineGraphView.clear_high_dimensional_input('divDependentVariable');
+    lineGraphView.toggle_binning();
 }
 
-function loadLineGraphView(){
-	registerLineGraphDragAndDrop();
+/**
+ * Constructor
+ * @constructor
+ */
+var LineGraphView = function () {
+    RmodulesView.call(this);
 }
 
-function clearGroupLine(divName)
-{
-	//Clear the drag and drop div.
-	var qc = Ext.get(divName);
-	
-	for(var i=qc.dom.childNodes.length-1;i>=0;i--)
-	{
-		var child=qc.dom.childNodes[i];
-		qc.dom.removeChild(child);
-	}	
+/**
+ * Inherit RModulesView
+ * @type {RmodulesView}
+ */
+LineGraphView.prototype = new RmodulesView();
+
+/**
+ * Correct pointer
+ * @type {LineGraphView}
+ */
+LineGraphView.prototype.constructor = LineGraphView;
+
+
+/**
+ * Get form parameters
+ * TODO: Refactor the validation to define validation in FormValidator.js instead here
+ * @param form
+ * @returns {*}
+ */
+LineGraphView.prototype.get_form_params = function (form) {
+
+    var dependentVariableEle = Ext.get("divDependentVariable");
+    var groupByVariableEle = Ext.get("divGroupByVariable");
+
+    var dependentNodeList = createNodeTypeArrayFromDiv(dependentVariableEle, "setnodetype");
+    var groupByNodeList = createNodeTypeArrayFromDiv(groupByVariableEle, "setnodetype");
+
+    //If the user dragged in multiple node types, throw an error.
+    if (dependentNodeList.length > 1) {
+        Ext.Msg.alert('Error', 'Time/Measurements variable must have same type');
+        return;
+    }
+
+    if (groupByNodeList.length > 1) {
+        Ext.Msg.alert('Error', 'Group concepts variable must have same type');
+        return;
+    }
+
+    /**
+     * To check if node is categorical or not
+     * @param nodeTypes
+     * @returns {boolean}
+     * @private
+     */
+    var _isCategorical = function (nodeTypes) {
+        return (nodeTypes[0] == "null") ? true : false;
+    } //
+
+
+    var dependentVariableConceptCode = "";
+    var groupByVariableConceptcode = "";
+
+    //If we have multiple items in the Dependent variable box, then we have to flip the graph image.
+    var flipImage = false;
+
+    if (dependentVariableEle.dom.childNodes.length > 1) {
+        flipImage = true;
+    }
+
+    //If the category variable element has children, we need to parse them and concatenate their values.
+    if (groupByVariableEle.dom.childNodes[0]) {
+        //Loop through the category variables and add them to a comma seperated list.
+        for (var nodeIndex = 0; nodeIndex < groupByVariableEle.dom.childNodes.length; nodeIndex++) {
+            //If we already have a value, add the seperator.
+            if (groupByVariableConceptcode != '') groupByVariableConceptcode += '|'
+
+            //Add the concept path to the string.
+            groupByVariableConceptcode += getQuerySummaryItem(groupByVariableEle.dom.childNodes[nodeIndex]).trim()
+        }
+    }
+
+    //If the category variable element has children, we need to parse them and concatenate their values.
+    if (dependentVariableEle.dom.childNodes[0]) {
+        //Loop through the category variables and add them to a comma seperated list.
+        for (var nodeIndex = 0; nodeIndex < dependentVariableEle.dom.childNodes.length; nodeIndex++) {
+            //If we already have a value, add the seperator.
+            if (dependentVariableConceptCode != '') dependentVariableConceptCode += '|'
+
+            //Add the concept path to the string.
+            dependentVariableConceptCode += getQuerySummaryItem(dependentVariableEle.dom.childNodes[nodeIndex]).trim()
+        }
+    }
+
+    //Make sure the user entered some items into the variable selection boxes.
+    if (dependentVariableConceptCode == '') {
+        Ext.Msg.alert('Missing input!', 'Please drag at least one concept into the time/measurements variable box.');
+        return;
+    }
+
+    if (groupByVariableConceptcode == '') {
+        Ext.Msg.alert('Missing input!', 'Please drag at least one concept into the group variable box.');
+        return;
+    }
+
+//    var variablesConceptCode = dependentVariableConceptCode + "|" + groupByVariableConceptcode;
+
+    var formParams = {
+        dependentVariable: dependentVariableConceptCode,
+        dependentVariableCategorical: _isCategorical(dependentNodeList),
+//        independentVariable: groupByVariableConceptcode,
+//        independentVariableCategorical: _isCategorical(groupByNodeList),
+        jobType: 'LineGraph',
+        plotIndividuals: Ext.get("plotIndividuals").dom.checked,
+        plotEvenlySpaced: Ext.get("plotEvenlySpaced").dom.checked,
+        projections: [ "rawIntensity" ],
+        graphType: Ext.get("graphType").dom.options[Ext.get("graphType").dom.selectedIndex].value,
+        groupByVariable: groupByVariableConceptcode
+    };
+
+    if (!this.load_high_dimensional_parameters(formParams)) return false;
+    this.load_binning_parameters(formParams);
+
+    //Pass in our flag that tells us whether to flip or not.
+    formParams["flipImage"] = (flipImage) ? 'TRUE' : 'FALSE';
+
+    return formParams;
+}
+
+LineGraphView.prototype.load_high_dimensional_parameters = function (formParams) {
+
+    var _dependentDataType = document.getElementById('dependentVarDataType').value ? document.getElementById('dependentVarDataType').value : 'CLINICAL';
+    var dependentGeneList = document.getElementById('dependentPathway').value;
+
+    var _groupByDataType = document.getElementById('groupByVarDataType').value ? document.getElementById('groupByVarDataType').value : 'CLINICAL';
+    var _groupByGeneList = document.getElementById('groupByPathway').value;
+
+    formParams["divDependentVariableType"] = _dependentDataType;
+    formParams["divDependentVariablePathway"] = dependentGeneList;
+
+    formParams["divGroupByVariableType"] = _groupByDataType;
+    formParams["divGroupByVariablePathway"] = _groupByGeneList;
+
+    return true;
 
 }
-function registerLineGraphDragAndDrop()
-{
-	//Set up drag and drop for Dependent and Independent variables on the data association tab.
 
-	//Get the Dependent DIV.
-	var dependentDiv = Ext.get("divDependentVariable");
-	dtgD = new Ext.dd.DropTarget(dependentDiv,{ddGroup : 'makeQuery'});
-	dtgD.notifyDrop =  dropNumericOntoCategorySelection;
-	
-	//Get the group by div
-	var groupByDiv = Ext.get("divGroupByVariable");
-	dtgG = new Ext.dd.DropTarget(groupByDiv, {ddGroup: 'makeQuery'});
-	dtgG.notifyDrop = dropOntoCategorySelection;
+/**
+ * Toggle global binning
+ */
+LineGraphView.prototype.toggle_binning = function () {
+    if ($j("#isBinning").prop('checked') ) {
+        GLOBAL.Binning = true;
+        $j(".binningDiv").show();
+    } else {
+        GLOBAL.Binning = false;
+        $j(".binningDiv").hide();
+    }
 }
+
+LineGraphView.prototype.update_manual_binning = function () {
+
+    // Change the ManualBinning flag.
+    GLOBAL.ManualBinning = document.getElementById('chkManualBin').checked;
+
+    // Get the type of the variable we are dealing with.
+    var variableType = Ext.get('variableType').getValue();
+
+    // Hide both DIVs.
+    var divContinuous = Ext.get('divManualBinContinuous');
+    var divCategorical = Ext.get('divManualBinCategorical');
+
+    divContinuous.setVisibilityMode(Ext.Element.DISPLAY);
+    divCategorical.setVisibilityMode(Ext.Element.DISPLAY);
+
+    divContinuous.hide();
+    divCategorical.hide();
+
+    // Show the div with the binning options relevant to our variable type.
+    if (document.getElementById('chkManualBin').checked) {
+        if (variableType == "Continuous") {
+            divContinuous.show();
+            divCategorical.hide();
+        } else {
+            divContinuous.hide();
+            divCategorical.show();
+            setupCategoricalItemsList("divCategoryVariable","divCategoricalItems");
+        }
+    }
+}
+
+LineGraphView.prototype.manage_bins = function (newNumberOfBins) {
+
+    // console.log("SurvivalAnalysisView.prototype.manage_bins ");
+
+    // This is the row template for a continuous BinningRow.
+    var tpl = new Ext.Template(
+        '<tr id="binningContinousRow{0}">',
+        '<td>Bin {0}</td><td><input type="text" id="txtBin{0}RangeLow" /> - <input type="text" id="txtBin{0}RangeHigh" /></td>',
+        '</tr>');
+    var tplcat = new Ext.Template(
+        '<tr id="binningCategoricalRow{0}">',
+        '<td><b>Bin {0}</b><div id="divCategoricalBin{0}" class="manualBinningBin"></div></td>',
+        '</tr>');
+
+    // This is the table we add continuous variables to.
+    var continuousBinningTable = Ext.get('tblBinContinuous');
+    var categoricalBinningTable = Ext.get('tblBinCategorical');
+    // Clear all old rows out of the table.
+
+    // For each bin, we add a row to the binning table.
+    for (var i = 1; i <= newNumberOfBins; i++) {
+        // If the object isn't already on the screen, add it.
+        if (!(Ext.get("binningContinousRow" + i))) {
+            tpl.append(continuousBinningTable, [ i ]);
+        } else {
+            Ext.get("binningContinousRow" + i).show();
+        }
+
+        // If the object isn't already on the screen, add it-Categorical
+        if (!(Ext.get("binningCategoricalRow" + i))) {
+            tplcat.append(categoricalBinningTable, [ i ]);
+            // Add the drop targets and handler function.
+            var bin = Ext.get("divCategoricalBin" + i);
+            var dropZone = new Ext.dd.DropTarget(bin, {
+                ddGroup : 'makeBin',
+                isTarget: true,
+                ignoreSelf: false
+            });
+            // dropZone.notifyEnter = test;
+            dropZone.notifyDrop = this.drop_onto_bin; // dont forget to make each
+            // dropped
+            // node a drag target
+        } else {
+            Ext.get("binningCategoricalRow" + i).show()
+        }
+    }
+
+    // If the new number of bins is less than the old, hide the old bins.
+    if (newNumberOfBins < GLOBAL.NumberOfBins) {
+        // For each bin, we add a row to the binning table.
+        for (i = parseInt(newNumberOfBins) + 1; i <= GLOBAL.NumberOfBins; i++) {
+            // If the object isn't already on the screen, add it.
+            if (Ext.get("binningContinousRow" + i)) {
+                Ext.get("binningContinousRow" + i).hide();
+            }
+            // If the object isn't already on the screen, add it.
+            if (Ext.get("binningCategoricalRow" + i)) {
+                Ext.get("binningCategoricalRow" + i).hide();
+            }
+        }
+    }
+
+    // Set the global variable to reflect the new bin count.
+    GLOBAL.NumberOfBins = newNumberOfBins;
+    this.update_manual_binning();
+}
+
+LineGraphView.prototype.load_binning_parameters = function (formParams) {
+
+    //These default to FALSE
+    formParams["manualBinningGroupBy"] = "FALSE";
+    formParams["binningGroupBy"] = "FALSE";
+
+    // Gather the data from the optional binning items, if we had selected to
+    // enable binning.
+    if (GLOBAL.Binning) {
+        // Get the number of bins the user entered.
+        var numberOfBins = Ext.get("txtNumberOfBins").getValue()
+
+        // Get the value from the dropdown that specifies the type of
+        // binning.
+        var binningType = Ext.get("selBinDistribution").getValue()
+
+        // Add these items to our form parameters.
+        formParams["binningGroupBy"] = "TRUE";
+        formParams["numberOfBinsGroupBy"] = numberOfBins;
+        formParams["binDistributionGroupBy"] = binningType;
+
+        // If we are using Manual Binning we need to add the parameters
+        // here.
+        if (GLOBAL.ManualBinning) {
+
+            // Get a bar separated list of bins and their ranges.
+            var binRanges = ""
+
+            // Loop over each row in the HTML table.
+            var variableType = Ext.get('variableType').getValue();
+            if (variableType == "Continuous") {
+                for (i = 1; i <= GLOBAL.NumberOfBins; i++) {
+                    binRanges += "bin" + i + ","
+                    binRanges += Ext.get('txtBin' + i + 'RangeLow').getValue()
+                        + ","
+                    binRanges += Ext.get('txtBin' + i + 'RangeHigh').getValue()
+                        + "|"
+                }
+            } else {
+                for (i = 1; i <= GLOBAL.NumberOfBins; i++) {
+                    binRanges += "bin" + i + "<>"
+                    var bin = Ext.get('divCategoricalBin' + i);
+                    for (var x = 0; x < bin.dom.childNodes.length; x++) {
+                        binRanges+=bin.dom.childNodes[x].getAttribute('conceptdimcode') + "<>"
+                    }
+                    binRanges=binRanges.substring(0, binRanges.length - 2);
+                    binRanges=binRanges+"|";
+                }
+            }
+            formParams["manualBinningGroupBy"] = "TRUE";
+            formParams["binRangesGroupBy"] = binRanges.substring(0,binRanges.length - 1);
+            formParams["variableTypeGroupBy"] = Ext.get('variableType').getValue();
+        }
+    }
+}
+
+/**
+ * Submit the job
+ * @param form
+ */
+LineGraphView.prototype.submit_job = function (form) {
+
+    // get formParams
+    var formParams = this.get_form_params(form);
+
+    if (formParams) { // if formParams is not null
+        submitJob(formParams);
+    }
+
+}
+
+// instantiate line graph instance
+var lineGraphView = new LineGraphView();

@@ -28,6 +28,8 @@ ScatterPlot.loader <- function(
   concept.independent.type = "",
   genes.dependent = "",
   genes.independent = "",
+  aggregate.probes.independent = FALSE,
+  aggregate.probes.dependent = FALSE,
   snptype.dependent = "",
   snptype.independent = ""  
   )
@@ -100,11 +102,6 @@ ScatterPlot.loader <- function(
 	{
 		yAxisLabel <- sub(pattern="^\\\\(.*?\\\\){3}",replacement="",x=concept.dependent,perl=TRUE)	
 	}
-	else if(concept.dependent.type == "MRNA")
-	{
-		yAxisDataTypeUnit <- "Gene Expression (normalized intensity)";
-		yAxisLabel <- paste(genes.dependent,yAxisDataTypeUnit,sep=" ")
-	}
 	else if(concept.dependent.type == "SNP")
 	{
 		if(snptype.dependent == "CNV")
@@ -118,15 +115,14 @@ ScatterPlot.loader <- function(
 		
 		yAxisLabel <- paste(genes.dependent,yAxisDataTypeUnit,sep=" ")		
 	}
+	else {
+		yAxisDataTypeUnit <- "High Dimensional Data (raw values)";
+		yAxisLabel <- paste(genes.dependent,yAxisDataTypeUnit,sep=" ")
+	}
 	
 	if(concept.independent.type == "CLINICAL")
 	{
 		xAxisLabel <- sub(pattern="^\\\\(.*?\\\\){3}",replacement="",x=concept.independent,perl=TRUE)
-	}
-	else if(concept.independent.type == "MRNA")
-	{
-		xAxisDataTypeUnit <- "Gene Expression (normalized intensity)"
-		xAxisLabel <- paste(genes.independent,xAxisDataTypeUnit,sep=" ")
 	}
 	else if(concept.independent.type == "SNP")
 	{
@@ -140,7 +136,11 @@ ScatterPlot.loader <- function(
 		}
 		
 		xAxisLabel <- paste(genes.independent,xAxisDataTypeUnit,sep=" ")
-	}	
+	} else
+	{
+		xAxisDataTypeUnit <- "High Dimensional Data (raw values)"
+		xAxisLabel <- paste(genes.independent,xAxisDataTypeUnit,sep=" ")
+	}
 	
 	#If there is a group column, make sure we set the graph up to use it to change the color of the points, as well as the shape.
 	#If there is a GROUP.1 that means we have more than one group column so we need to break it out into different graphs.
@@ -169,7 +169,7 @@ ScatterPlot.loader <- function(
 			tmp <- tmp + stat_smooth(method="lm", se=FALSE,size=1.25) 
 			tmp <- tmp + aes(colour = GROUP.1) 
 			tmp <- tmp + aes(shape = GROUP.1) 
-			tmp <- tmp + scale_shape_manual(values=1:20)
+			tmp <- tmp + scale_shape_manual(values=rep_len(1:25,length.out = length(unique(line.data$GROUP))))
 			tmp <- tmp + scale_colour_brewer("GROUP.1")
 			tmp <- tmp + scale_x_continuous(modifiedXAxisLabel) 
 			tmp <- tmp + scale_y_continuous(yAxisLabel)
@@ -192,7 +192,7 @@ ScatterPlot.loader <- function(
 		tmp <- tmp + stat_smooth(method="lm", se=FALSE,size=1.25) 
 		tmp <- tmp + aes(colour = GROUP) 
 		tmp <- tmp + aes(shape = GROUP) 
-		tmp <- tmp + scale_shape_manual(values=1:20)
+		tmp <- tmp + scale_shape_manual(values=rep_len(1:25,length.out = length(unique(line.data$GROUP))))
 		tmp <- tmp + scale_x_continuous(xAxisLabel) 
 		tmp <- tmp + scale_y_continuous(yAxisLabel)
 		
