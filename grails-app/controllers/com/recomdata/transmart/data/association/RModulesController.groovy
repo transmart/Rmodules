@@ -36,7 +36,7 @@ class RModulesController {
             "MIRNA_SEQ":        "mirnaseq",
             "RBM":              "rbm",
             "PROTEOMICS":       "protein",
-            "RNASEQ":           "rnaseq_cog",
+            "RNASEQ":           "rnaseqcog",
             "METABOLOMICS":     "metabolite",
             "acgh":             "acgh",
             "rnaseq":           "rnaseq"
