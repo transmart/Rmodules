@@ -1,7 +1,6 @@
 <h2>Marker Selection - Heatmap</h2>
 
 <p>
-%{--
     <div class="plot_hint">
         Click on the heatmap image to open it in a new window as this may increase readability.<br><br>
     </div>
@@ -11,7 +10,7 @@
             <g:img file="${location}" class="img-result-size"></g:img>
         </a>
     </g:each>
---}%
+
     <div>
         <span class='AnalysisHeader'>Table of top Markers</span>
         <g:if test="${grailsApplication.config.com.thomsonreuters.transmart.metacoreAnalyticsEnable}">
