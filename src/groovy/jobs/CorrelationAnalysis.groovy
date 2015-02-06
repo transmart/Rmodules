@@ -5,6 +5,7 @@ import jobs.steps.helpers.GroupNamesHolder
 import jobs.steps.helpers.MultiNumericClinicalVariableColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
 import jobs.table.Table
+import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
@@ -29,6 +30,8 @@ class CorrelationAnalysis extends AbstractAnalysisJob {
 
     @PostConstruct
     void init() {
+        primaryKeyColumnConfigurator.column =
+                new PrimaryKeyColumn(header: 'PATIENT_NUM')
 
         columnConfigurator.header = 'VALUE'
         columnConfigurator.keyForConceptPaths = 'variablesConceptPaths'
@@ -43,7 +46,7 @@ class CorrelationAnalysis extends AbstractAnalysisJob {
 
         steps << new BuildTableResultStep(
                 table: table,
-                configurators: [columnConfigurator])
+                configurators: [ primaryKeyColumnConfigurator, columnConfigurator])
 
         steps << new CorrelationAnalysisDumpDataStep(
                 table: table,
