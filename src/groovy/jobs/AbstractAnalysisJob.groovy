@@ -40,7 +40,7 @@ abstract class AbstractAnalysisJob {
         name.split('-')[1]
     }
 
-    protected def headerMessage = { String header ->
+    protected String headerMessage(String header) {
         messageSource.getMessage("jobs.${analysisName}.outputFile.header.${header}", null, header, null)
     }
 

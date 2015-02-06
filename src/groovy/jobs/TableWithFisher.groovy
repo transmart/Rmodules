@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 
+import static org.transmartproject.utils.ConceptUtils.getLeafFolders
+import static org.transmartproject.utils.ConceptUtils.getParentFolders
+
 @Component
 @Scope('job')
 class TableWithFisher extends CategoricalOrBinnedJob {
@@ -44,5 +47,29 @@ class TableWithFisher extends CategoricalOrBinnedJob {
     @Override
     protected getForwardPath() {
         """/tableWithFisher/fisherTableOut?jobName=$name"""
+    }
+
+    @Override
+    protected String headerMessage(String header) {
+        String modifiedHeader = super.headerMessage header
+        if (modifiedHeader == independentVariableConfigurator.header) {
+            String indVar
+            if (independentVariableConfigurator.categorical) {
+                indVar = getParentFolders(independentVariableConfigurator.conceptPaths).join(' ')
+            } else {
+                indVar = getLeafFolders(independentVariableConfigurator.conceptPaths).join(' ')
+            }
+            "Independent variable - ${indVar} value"
+        } else if (modifiedHeader == dependentVariableConfigurator.header) {
+            String depVar
+            if (dependentVariableConfigurator.categorical) {
+                depVar = getParentFolders(dependentVariableConfigurator.conceptPaths).join(' ')
+            } else {
+                depVar = getLeafFolders(dependentVariableConfigurator.conceptPaths).join(' ')
+            }
+            "Dependent variable - ${depVar} value"
+        } else {
+            modifiedHeader
+        }
     }
 }

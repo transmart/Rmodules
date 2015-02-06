@@ -38,7 +38,7 @@ abstract class CategoricalOrBinnedJob extends AbstractAnalysisJob implements Ini
                 table: table,
                 temporaryDirectory: temporaryDirectory,
                 outputFileName: DEFAULT_OUTPUT_FILE_NAME,
-                headerMessageClosure: headerMessage)
+                headerMessageClosure: this.&headerMessage)
 
         steps << new RCommandsStep(
                 temporaryDirectory: temporaryDirectory,

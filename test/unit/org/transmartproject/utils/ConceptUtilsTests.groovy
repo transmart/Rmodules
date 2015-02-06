@@ -6,7 +6,10 @@ import org.junit.Test
 
 import static ConceptUtils.shortestUniqueTails
 import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.contains
 import static org.hamcrest.Matchers.equalTo
+import static org.transmartproject.utils.ConceptUtils.getLeafFolders
+import static org.transmartproject.utils.ConceptUtils.getParentFolders
 
 @TestMixin(GrailsUnitTestMixin)
 class ConceptUtilsTests {
@@ -89,4 +92,23 @@ class ConceptUtilsTests {
         ])
     }
 
+    @Test
+    void testGetParentFolders() {
+        assertThat getParentFolders('\\A\\B\\1\\|\\A\\B\\2\\'), contains('\\B\\')
+    }
+
+    @Test
+    void testGetParentFoldersDifferentParents() {
+        assertThat getParentFolders('\\A\\A\\1\\|\\A\\B\\2\\'), contains('\\A\\', '\\B\\')
+    }
+
+    @Test
+    void testGetParentFoldersDifferentDepth() {
+        assertThat getParentFolders('\\A\\B\\1\\|\\A\\'), contains('\\B\\')
+    }
+
+    @Test
+    void testGetLeafFolders() {
+        assertThat getLeafFolders('\\A\\B\\1\\|\\A\\B\\2\\'), contains('\\1\\', '\\2\\')
+    }
 }
