@@ -8,6 +8,7 @@ import jobs.steps.helpers.SimpleAddColumnConfigurator
 import jobs.table.Table
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 import org.transmartproject.core.dataquery.highdim.projections.Projection
 
 import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
@@ -36,7 +37,8 @@ abstract class CategoricalOrBinnedJob extends AbstractAnalysisJob implements Ini
         steps << new MultiRowAsGroupDumpTableResultsStep(
                 table: table,
                 temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
+                outputFileName: DEFAULT_OUTPUT_FILE_NAME,
+                headerMessageClosure: headerMessage)
 
         steps << new RCommandsStep(
                 temporaryDirectory: temporaryDirectory,

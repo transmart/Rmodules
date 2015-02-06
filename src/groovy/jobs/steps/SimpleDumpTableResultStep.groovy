@@ -10,6 +10,8 @@ class SimpleDumpTableResultStep extends AbstractDumpStep {
 
     File temporaryDirectory
 
+    Closure<String> headerMessageClosure
+
     final String statusName = 'Dumping Table Result'
 
     @Override
@@ -34,7 +36,11 @@ class SimpleDumpTableResultStep extends AbstractDumpStep {
     }
 
     void writeHeader(CSVWriter writer) {
-        writer.writeNext(headers as String[])
+        List<String> fileHeaders = headers
+        if (headerMessageClosure) {
+            fileHeaders = headers.collect { headerMessageClosure(it) }
+        }
+        writer.writeNext(fileHeaders as String[])
     }
 
 

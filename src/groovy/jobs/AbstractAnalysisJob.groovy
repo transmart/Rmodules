@@ -6,6 +6,7 @@ import jobs.steps.Step
 import org.apache.log4j.Logger
 import org.quartz.JobExecutionException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 import javax.annotation.Resource
 
@@ -21,6 +22,9 @@ abstract class AbstractAnalysisJob {
     @Autowired
     AnalysisConstraints analysisConstraints
 
+    @Autowired
+    MessageSource messageSource
+
     @Resource(name = 'jobName')
     String name /* The job instance name */
 
@@ -30,6 +34,15 @@ abstract class AbstractAnalysisJob {
     Closure updateStatus
 
     Closure setStatusList
+
+    //FIXME Where to get analysis name?
+    String getAnalysisName() {
+        name.split('-')[1]
+    }
+
+    protected def headerMessage = { String header ->
+        messageSource.getMessage("jobs.${analysisName}.outputFile.header.${header}", null, header, null)
+    }
 
     File topTemporaryDirectory
 
