@@ -14,6 +14,10 @@ import javax.annotation.PostConstruct
 import java.security.InvalidParameterException
 
 import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
+import static org.transmartproject.utils.ConceptUtils.getLeafFolders
+import static org.transmartproject.utils.ConceptUtils.getLeafFolders
+import static org.transmartproject.utils.ConceptUtils.getParentFolders
+import static org.transmartproject.utils.ConceptUtils.getParentFolders
 
 @Component
 @Scope('job')
@@ -81,7 +85,8 @@ class ScatterPlot extends AbstractAnalysisJob {
         steps << new MultiRowAsGroupDumpTableResultsStep(
                 table:              table,
                 temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
+                outputFileName: DEFAULT_OUTPUT_FILE_NAME,
+                headerMessageClosure: this.&headerMessage)
 
         steps << new RCommandsStep(
                 temporaryDirectory: temporaryDirectory,
@@ -116,4 +121,19 @@ class ScatterPlot extends AbstractAnalysisJob {
     protected getForwardPath() {
         "/scatterPlot/scatterPlotOut?jobName=$name"
     }
+
+    @Override
+    protected String headerMessage(String header) {
+        String modifiedHeader = super.headerMessage header
+        if (modifiedHeader == independentVariableConfigurator.header) {
+            String indVar = getLeafFolders(independentVariableConfigurator.conceptPaths).join(' ')
+            "Independent variable - ${indVar} value"
+        } else if (modifiedHeader == dependentVariableConfigurator.header) {
+            String depVar = getLeafFolders(dependentVariableConfigurator.conceptPaths).join(' ')
+            "Dependent variable - ${depVar} value"
+        } else {
+            modifiedHeader
+        }
+    }
+
 }
