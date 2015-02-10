@@ -3,6 +3,7 @@ package jobs
 import jobs.misc.AnalysisConstraints
 import jobs.steps.ParametersFileStep
 import jobs.steps.Step
+import jobs.steps.WriteFileStep
 import org.apache.log4j.Logger
 import org.quartz.JobExecutionException
 import org.springframework.beans.factory.annotation.Autowired
@@ -71,7 +72,11 @@ abstract class AbstractAnalysisJob {
                  * intermediate data */
                 new ParametersFileStep(
                         temporaryDirectory: temporaryDirectory,
-                        params: params)
+                        params: params),
+                new WriteFileStep(
+                        temporaryDirectory: temporaryDirectory,
+                        fileName: 'README.txt',
+                        fileContent: messageSource.getMessage("jobs.${analysisName}.readmeFileContent", null, null, null))
         ]
         stepList += prepareSteps()
 
