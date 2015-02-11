@@ -115,9 +115,9 @@ FisherTable.loader.single <- function(dataChunk,splitColumn,fileNameQualifier)
 	chiResults <- chisq.test(countTable)
 
 	#Write the results of the tests to a file.
-	write(paste("Fisher exact test p-value = ",format(fisherResults$p.value,digits=3),sep=""), file=statisticalTestsResultsFile,append=T)
-	write(paste("Chi-squared test statistic = ",format(chiResults$statistic,digits=3),sep=""), file=statisticalTestsResultsFile,append=T)
-	write(paste("Chi-squared p-value = ",format(chiResults$p.value,digits=3),sep=""), file=statisticalTestsResultsFile,append=T)
+	write(paste("Fisher exact test p-value",format(fisherResults$p.value,digits=3),sep="\t"), file=statisticalTestsResultsFile,append=T)
+	write(paste("Chi-squared test statistic",format(chiResults$statistic,digits=3),sep="\t"), file=statisticalTestsResultsFile,append=T)
+	write(paste("Chi-squared p-value",format(chiResults$p.value,digits=3),sep="\t"), file=statisticalTestsResultsFile,append=T)
 
 	#Print count table to file.
 	write.table(countTable,countsFile,quote=F,sep="\t",row.names=T,col.names=T,append=T)
