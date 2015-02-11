@@ -33,6 +33,8 @@ Correlation.loader <- function(
 	######################################################
 	#Read the correlation data.
 	line.data <- read.delim(input.filename, header = T, row.names = 1)
+	cleanHeaderNames <- gsub("\"", "", strsplit(readLines(input.filename, n = 1),' *\t *')[[1]])
+    colnames(line.data) <- cleanHeaderNames[-1]
 
 	#This is the name of the output file for the correlation.
 	correlationResultsFile <- "Correlation.txt"
