@@ -120,5 +120,5 @@ FisherTable.loader.single <- function(dataChunk,splitColumn,fileNameQualifier)
 	write(paste("Chi-squared p-value",format(chiResults$p.value,digits=3),sep="\t"), file=statisticalTestsResultsFile,append=T)
 
 	#Print count table to file.
-	write.table(countTable,countsFile,quote=F,sep="\t",row.names=T,col.names=T,append=T)
+	write.table(countTable, countsFile, quote = F, sep = "\t", row.names = T, col.names = NA, append = T)
 }
