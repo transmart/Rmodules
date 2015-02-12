@@ -38,26 +38,26 @@ BoxPlot.loader <- function(
   binning.variabletype = ''
   )
  {
- 	
+
 	print("-------------------")
 	print("BoxPlotLoader.R")
 	print("LOADING BOX PLOT")
-	
+
 	library(plyr)
 	library(ggplot2)
 	library(Cairo)
-	
+
 	######################################################
 	#Read the line graph data.
 	line.data<-read.delim(input.filename,header=T)
 
 	#Make sure we always use the x column as a column of factors.
 	line.data$X <- as.factor(line.data$X)
-	
+
 	#Make sure the group columns are regarded as factors.
 	if("GROUP" %in% colnames(line.data)) line.data$GROUP <- as.factor(line.data$GROUP)
-	if("GROUP.1" %in% colnames(line.data)) line.data$GROUP.1 <- as.factor(line.data$GROUP.1)	
-	
+	if("GROUP.1" %in% colnames(line.data)) line.data$GROUP.1 <- as.factor(line.data$GROUP.1)
+
 	if((binning.type == "EDP" && binning.manual == FALSE) || (binning.type == "ESB" && binning.manual == FALSE) || (binning.manual == TRUE && binning.variabletype == "Continuous"))
 	{
 	#We need to re-sort the factors. Grab the current levels.
@@ -73,8 +73,8 @@ BoxPlot.loader <- function(
 	factorDataFrame$binstart <- as.numeric(gsub("\\s*<=\\s*X\\s*<(=*)\\s*(.*)", "",factorDataFrame$binname))
 
 	#Order the new data frame on the first number from the range string.
-	factorDataFrame <- factorDataFrame[order(factorDataFrame$binstart), ]  
-	
+	factorDataFrame <- factorDataFrame[order(factorDataFrame$binstart), ]
+
 	#Reapply the factor to get the items in the right order.
 		line.data$X <- factor(line.data$X,factorDataFrame$binname,ordered = TRUE)
 	}
@@ -86,7 +86,7 @@ BoxPlot.loader <- function(
         colnames(line.data)[which(columnNames == "GROUP")] <- "GROUP.1"
         colnames(line.data)[which(columnNames == "GROUP.1")] <- "GROUP"
 	}
-	
+
 	#If we are generating statistics per group, we apply the stats function after splitting the groups.
 	if(("GROUP" %in% colnames(line.data)) && ("GROUP.1" %in% colnames(line.data)))
 	{
@@ -98,24 +98,24 @@ BoxPlot.loader <- function(
 		{
 			#Build a list of indexes which represent the records we need to pull for each group.
 			currentIndex <- which(line.data$GROUP==currentGroup)
-				
+
 			#Pull the records into another object.
 			currentGroupingData <- line.data[currentIndex,]
-			
+
 			trimmedGroupName <- gsub("^\\s+|\\s+$", "",currentGroup)
-			
+
 			#Run the lm function on each grouping.
 			lapply(split(currentGroupingData,currentGroupingData$GROUP.1),calculateANOVA,"GROUP.1",trimmedGroupName)
 		}
-		
+
 		#This calls the first function on each "GROUP" which will call another function on "GROUP.1"
 		lapply(groupList,subFunctionForLM,groupedData)
 	}
-	else if("GROUP.1" %in% colnames(line.data)) 
+	else if("GROUP.1" %in% colnames(line.data))
 	{
 		lapply(split(line.data, line.data$GROUP.1), calculateANOVA,"GROUP.1","")
-	}	
-	else if("GROUP" %in% colnames(line.data)) 
+	}
+	else if("GROUP" %in% colnames(line.data))
 	{
 		lapply(split(line.data, line.data$GROUP), calculateANOVA,"GROUP","")
 	}
@@ -124,24 +124,24 @@ BoxPlot.loader <- function(
 		calculateANOVA(line.data,"","")
 	}
 	######################################################
-	
+
 	######################################################
-	#Plotting the box plot.		
-	
+	#Plotting the box plot.
+
 	#If we have both a group and a group1 column we need to create different graphs.
 	if(("GROUP" %in% colnames(line.data)) && ("GROUP.1" %in% colnames(line.data)))
 	{
 		splitData <- split(line.data,line.data$GROUP);
 		groupList <- matrix(unique(line.data$GROUP));
-		
-		lapply(groupList,graphSubset,splitData,concept.independent.type,concept.independent,genes.independent,concept.dependent.type,concept.dependent,genes.dependent,output.file,flipimage,binning.enabled);	
+
+		lapply(groupList,graphSubset,splitData,concept.independent.type,concept.independent,genes.independent,concept.dependent.type,concept.dependent,genes.dependent,output.file,flipimage,binning.enabled);
 	}
 	else
 	{
 		graphSubset('',line.data,concept.independent.type,concept.independent,genes.independent,concept.dependent.type,concept.dependent,genes.dependent,output.file,flipimage,binning.enabled);
 	}
 	######################################################
-	
+
 	print("-------------------")
 }
 
@@ -149,17 +149,17 @@ calculateANOVA <- function(splitData,splitColumn,fileNameQualifier)
 {
 	#This is the current group we are generating the statistics for.
 	currentGroup <- unique(splitData[[splitColumn]])
-	
+
 	#If we have a qualifier we need to throw a "_" after the name of the file.
 	if(fileNameQualifier != '') fileNameQualifier <- paste('_',fileNameQualifier,sep="");
 	fileNameQualifier <- gsub(" (.*)$", "",fileNameQualifier, perl=TRUE)
-	
+
 	#The filename for the summary stats file.
 	summaryFileName <- paste("ANOVA_RESULTS",fileNameQualifier,".txt",sep="")
-	
+
 	#The filename for the pairwise file.
 	pairwiseFileName <- paste("ANOVA_PAIRWISE",fileNameQualifier,".txt",sep="")
-	
+
 	#We need to get the p-value for this ANOVA.
 	#Run the ANOVA
 	if (length(levels(splitData$X)) <=1 ) stop("Dependent variables must contain at least 2 levels (must contain multiple groups).")
@@ -167,16 +167,16 @@ calculateANOVA <- function(splitData,splitColumn,fileNameQualifier)
 
 	#Get a summary of the ANOVA
 	summaryAnova <- summary(dataChunk.aov)
-    
+
 	#If we have a group column we should write the group name to the file.
 	if(splitColumn %in% colnames(splitData)) write(paste("name=",currentGroup,sep=""), file=summaryFileName,append=T)
-	
+
 	write("||PVALUES||", file=summaryFileName,append=T)
-	
+
 	#Write the p-value to a file.
-	write(paste("p=",format(summaryAnova[[1]]$'Pr(>F)'[1],digits=3),sep=""), file=summaryFileName,append=TRUE)
-	write(paste("f=",format(summaryAnova[[1]]$'F value'[1],digits=3),sep=""), file=summaryFileName,append=TRUE)	
-	
+	write(paste("p-value=",format(summaryAnova[[1]]$'Pr(>F)'[1],digits=3),sep=""), file=summaryFileName,append=TRUE)
+	write(paste("F-value=",format(summaryAnova[[1]]$'F value'[1],digits=3),sep=""), file=summaryFileName,append=TRUE)
+
 	#Create a table that has a mean for each group.
 	aggregateTable <- aggregate(splitData$Y, list(splitData$X), mean)
 
@@ -195,11 +195,12 @@ calculateANOVA <- function(splitData,splitColumn,fileNameQualifier)
 
 	#Merge the tables so we can output the counts and means in one statement.
 	finalOutputTable <- merge(aggregateTable,countTable,by="GROUP")
-	
+
 	write("||SUMMARY||", file=summaryFileName,append=T)
-	
+
 	#Write the summary table to a file.
-	write.table(finalOutputTable,summaryFileName,quote=TRUE,col.names=FALSE,append=T)
+	write.table(finalOutputTable, summaryFileName, quote=TRUE, col.names=T, row.names = F, append=T)
+	write("", file = summaryFileName, append=T) # and seperate each result by an empty line
 
 	#We also need to generate the pairwise p-values matrix.
 	pairwiseResults <- pairwise.t.test(splitData$Y, splitData$X, p.adj = "none")[["p.value"]]
@@ -207,25 +208,26 @@ calculateANOVA <- function(splitData,splitColumn,fileNameQualifier)
 	#Write the matrix to a table.
 	if(splitColumn %in% colnames(splitData)) write(paste("name=",currentGroup,sep=""), file=pairwiseFileName,append=T)
 	write.table(format(pairwiseResults,digits=3),pairwiseFileName,quote=FALSE,col.names=TRUE,sep="\t",append=T)
+	write("", file = pairwiseFileName, append=T) # and seperate each result by an empty line
 
 }
 
 createPlotAesthetics <- function(line.data)
 {
 	boxPlotAES <- aes(factor(X), Y)
-	
+
 	#If we have different probes we need to fill the boxplots from the group column.
 	if("GROUP.1" %in% colnames(line.data))
 	{
 		boxPlotAES <- aes(factor(X), Y, fill=GROUP.1)
 	}
-	else if("GROUP" %in% colnames(line.data)) 
+	else if("GROUP" %in% colnames(line.data))
 	{
 		boxPlotAES <- aes(factor(X), Y, fill=GROUP)
 	}
 
 	return(boxPlotAES)
-	
+
 }
 
 createYAxisLabel <- function(concept.type,concept,genes)
@@ -255,50 +257,50 @@ graphSubset <- function(currentGroup,
 	#Get the name of the group.
 	trimmedGroupName <- gsub("^\\s+|\\s+$", "",currentGroup)
 	trimmedGroupName <- gsub(" (.*)$", "",trimmedGroupName, perl=TRUE)
-	
+
 	#If we don't have a group, graph all the data.
 	if(trimmedGroupName != '') dataToGraph <- dataToGraph[[currentGroup]]
-	
+
 	#Set the aesthetics.
-	boxPlotAES <- createPlotAesthetics(dataToGraph)	
-	
+	boxPlotAES <- createPlotAesthetics(dataToGraph)
+
 	#If we are flipping the axis we need to add a coord_flip() to the box plot. We also conditionally set the axis parameters based on graph orientation.
 	if(flipimage)
 	{
 		#Create the y axis label based on the concepts.
 		yAxisLabel <- createYAxisLabel(concept.independent.type,concept.independent,genes.independent)
-		
+
 		xAxisLabel = ''
-		
+
 		#If we are binning the names can get kind of unruly. We display a title here so we can just use "X" in the labels.
 		if(binning.enabled == TRUE)	xAxisLabel = sub(pattern="^\\\\(.*?\\\\){3}",replacement="",x=concept.dependent,perl=TRUE)
-		
+
 		#This is the base box plot.
-		tmp <- ggplot(dataToGraph, boxPlotAES) + geom_boxplot()		
-		
+		tmp <- ggplot(dataToGraph, boxPlotAES) + geom_boxplot()
+
 		#Set the Y axis label.
 		tmp <- tmp + ylab(yAxisLabel)
-		
+
 		#Set the Y axis title.
 		tmp <- tmp + xlab(xAxisLabel)
-		
+
 		#Set the font for the x axis title.
-		tmp <- tmp + theme(axis.title.x=element_text(size = 15,face="bold"))		
-		
+		tmp <- tmp + theme(axis.title.x=element_text(size = 15,face="bold"))
+
 		#Set the fonts for the axis labels.
 		tmp <- tmp + theme(axis.text.y = element_text(size = 15,face="bold"))
 		tmp <- tmp + theme(axis.text.x = element_text(size = 10,face="bold"))
-		
+
 		#Flip the image.
 		tmp <- tmp + coord_flip()
-		
+
 		#Set the font size for the legend.
 		tmp <- tmp + theme(legend.text = element_text(size = 9,hjust=0))
-		
+
 		#Get the device ready for printing and create the image file.
 		CairoPNG(file=paste(output.file,"_",trimmedGroupName,".png",sep=""),width=800,height=800)
 		print (tmp)
-		
+
 		#Close any open devices.
 		dev.off()
 	}
@@ -306,37 +308,37 @@ graphSubset <- function(currentGroup,
 	{
 		#Create the y axis label based on the concepts.
 		yAxisLabel <- createYAxisLabel(concept.dependent.type,concept.dependent,genes.dependent)
-		
+
 		xAxisLabel = ''
-		
+
 		#If we are binning the names can get kind of unruly. We display a title here so we can just use "X" in the labels.
 		if(binning.enabled == TRUE) xAxisLabel = sub(pattern="^\\\\(.*?\\\\){3}",replacement="",x=concept.independent,perl=TRUE)
-	
+
 		#This is the base box plot.
 		tmp <- ggplot(dataToGraph, boxPlotAES) + geom_boxplot()
-	
+
 		#Set the Y axis label.
 		tmp <- tmp + ylab(yAxisLabel)
-		
+
 		#Set the font for the x axis title.
-		tmp <- tmp + xlab(xAxisLabel)		
-		
+		tmp <- tmp + xlab(xAxisLabel)
+
 		#Set the font for the y axis title.
 		tmp <- tmp + theme(axis.title.y=element_text(size = 15,face="bold", angle=90))
-		
+
 		#Set the fonts for the axis labels.
 		tmp <- tmp + theme(axis.text.x = element_text(size = 15,face="bold",angle=15))
 		tmp <- tmp + theme(axis.text.y = element_text(size = 10,face="bold"))
-		
+
 		#Set the font size for the legend.
 		tmp <- tmp + theme(legend.text = element_text(size = 9,hjust=0))
-		
+
 		#Get the device ready for printing and create the image file.
 		CairoPNG(file=paste(output.file,"_",trimmedGroupName,".png",sep=""),width=800,height=800)
-		
+
 		print (tmp)
-			
+
 		#Close any open devices.
-		dev.off()			
+		dev.off()
 	}
 }
