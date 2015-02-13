@@ -85,8 +85,7 @@ class ScatterPlot extends AbstractAnalysisJob {
         steps << new MultiRowAsGroupDumpTableResultsStep(
                 table:              table,
                 temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME,
-                headerMessageClosure: this.&headerMessage)
+                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
 
         steps << new RCommandsStep(
                 temporaryDirectory: temporaryDirectory,
@@ -120,20 +119,6 @@ class ScatterPlot extends AbstractAnalysisJob {
     @Override
     protected getForwardPath() {
         "/scatterPlot/scatterPlotOut?jobName=$name"
-    }
-
-    @Override
-    protected String headerMessage(String header) {
-        String modifiedHeader = super.headerMessage header
-        if (modifiedHeader == independentVariableConfigurator.header) {
-            String indVar = getLeafFolders(independentVariableConfigurator.conceptPaths).join(' ')
-            "Independent variable - ${indVar} value"
-        } else if (modifiedHeader == dependentVariableConfigurator.header) {
-            String depVar = getLeafFolders(dependentVariableConfigurator.conceptPaths).join(' ')
-            "Dependent variable - ${depVar} value"
-        } else {
-            modifiedHeader
-        }
     }
 
 }
