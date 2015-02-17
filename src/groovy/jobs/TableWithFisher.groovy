@@ -49,27 +49,4 @@ class TableWithFisher extends CategoricalOrBinnedJob {
         """/tableWithFisher/fisherTableOut?jobName=$name"""
     }
 
-    @Override
-    protected String headerMessage(String header) {
-        String modifiedHeader = super.headerMessage header
-        if (modifiedHeader == independentVariableConfigurator.header) {
-            String indVar
-            if (independentVariableConfigurator.categorical) {
-                indVar = getParentFolders(independentVariableConfigurator.conceptPaths).join(' ')
-            } else {
-                indVar = getLeafFolders(independentVariableConfigurator.conceptPaths).join(' ')
-            }
-            "Independent variable - ${indVar} value"
-        } else if (modifiedHeader == dependentVariableConfigurator.header) {
-            String depVar
-            if (dependentVariableConfigurator.categorical) {
-                depVar = getParentFolders(dependentVariableConfigurator.conceptPaths).join(' ')
-            } else {
-                depVar = getLeafFolders(dependentVariableConfigurator.conceptPaths).join(' ')
-            }
-            "Dependent variable - ${depVar} value"
-        } else {
-            modifiedHeader
-        }
-    }
 }
