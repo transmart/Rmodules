@@ -7,9 +7,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 
-import static org.transmartproject.utils.ConceptUtils.getLeafFolders
-import static org.transmartproject.utils.ConceptUtils.getParentFolders
-
 @Component
 @Scope('job')
 class TableWithFisher extends CategoricalOrBinnedJob {

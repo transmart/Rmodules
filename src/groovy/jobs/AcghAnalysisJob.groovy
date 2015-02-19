@@ -1,19 +1,21 @@
 package jobs
 
+import jobs.misc.AnalysisConstraints
 import jobs.steps.*
 import jobs.steps.helpers.CategoricalColumnConfigurator
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.HighDimensionColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.transmartproject.core.dataquery.highdim.HighDimensionResource
 
 import javax.annotation.PostConstruct
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
+abstract class AcghAnalysisJob extends AbstractLowDimensionalAnalysisJob {
 
-abstract class AcghAnalysisJob extends AbstractAnalysisJob {
+    @Autowired
+    AnalysisConstraints analysisConstraints
 
     @Autowired
     HighDimensionResource highDimensionResource
@@ -31,21 +33,19 @@ abstract class AcghAnalysisJob extends AbstractAnalysisJob {
     void init() {
         primaryKeyColumnConfigurator.column = new PrimaryKeyColumn(header: 'PATIENT_NUM')
 
-        groupByConfigurator.header                    = 'group'
-        groupByConfigurator.keyForConceptPaths        = 'groupVariable'
+        groupByConfigurator.header = 'group'
+        groupByConfigurator.keyForConceptPaths = 'groupVariable'
     }
 
-    @Autowired
-    Table table
-
     @Override
-    protected List<Step> prepareSteps() {
+    protected List<Step> prepareDataSteps() {
         List<Step> steps = []
 
+        steps << dumpHeaderConceptsFileStep
+
         steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        groupByConfigurator])
+                table: table,
+                configurators: columnConfigurators)
 
         steps << new SimpleDumpTableResultStep(table: table,
                 temporaryDirectory: temporaryDirectory,
@@ -61,15 +61,15 @@ abstract class AcghAnalysisJob extends AbstractAnalysisJob {
 
         steps << createDumpHighDimensionDataStep { -> openResultSetStep.results }
 
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
-
         steps
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+                primaryKeyColumnConfigurator,
+                groupByConfigurator,
+        ]
     }
 
     @Override

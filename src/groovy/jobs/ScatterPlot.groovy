@@ -1,9 +1,8 @@
 package jobs
 
-import jobs.steps.*
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.NumericColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -13,15 +12,9 @@ import org.transmartproject.core.dataquery.highdim.projections.Projection
 import javax.annotation.PostConstruct
 import java.security.InvalidParameterException
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
-import static org.transmartproject.utils.ConceptUtils.getLeafFolders
-import static org.transmartproject.utils.ConceptUtils.getLeafFolders
-import static org.transmartproject.utils.ConceptUtils.getParentFolders
-import static org.transmartproject.utils.ConceptUtils.getParentFolders
-
 @Component
 @Scope('job')
-class ScatterPlot extends AbstractAnalysisJob {
+class ScatterPlot extends AbstractLowDimensionalAnalysisJob {
 
     @Autowired
     SimpleAddColumnConfigurator primaryKeyColumnConfigurator
@@ -31,9 +24,6 @@ class ScatterPlot extends AbstractAnalysisJob {
 
     @Autowired
     NumericColumnConfigurator dependentVariableConfigurator
-
-    @Autowired
-    Table table
 
     @PostConstruct
     void init() {
@@ -73,32 +63,6 @@ class ScatterPlot extends AbstractAnalysisJob {
     }
 
     @Override
-    protected List<Step> prepareSteps() {
-        List<Step> steps = []
-
-        steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        independentVariableConfigurator,
-                        dependentVariableConfigurator,])
-
-        steps << new MultiRowAsGroupDumpTableResultsStep(
-                table:              table,
-                temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory:   scriptsDirectory,
-                rStatements:        RStatements,
-                studyName:          studyName,
-                params:             params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
-
-        steps
-    }
-
-    @Override
     protected List<String> getRStatements() {
         [ '''source('$pluginDirectory/ScatterPlot/ScatterPlotLoader.R')''',
                 '''ScatterPlot.loader(
@@ -114,6 +78,15 @@ class ScatterPlot extends AbstractAnalysisJob {
                     snptype.dependent            = '',
                     snptype.independent          = '',
         )''' ] // last two params should be removed
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+            primaryKeyColumnConfigurator,
+            independentVariableConfigurator,
+            dependentVariableConfigurator,
+        ]
     }
 
     @Override

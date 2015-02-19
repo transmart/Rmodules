@@ -20,11 +20,11 @@ class CensorColumnConfigurator extends ColumnConfigurator {
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
 
-        String conceptPaths = getConceptPaths()
+        List<String> conceptPaths = getConceptPaths()
 
-        if (conceptPaths != '') {
+        if (conceptPaths) {
             Set<ClinicalVariable> variables =
-                    conceptPaths.split(/\|/).collect {
+                    conceptPaths.collect {
                         clinicalDataRetriever.createVariableFromConceptPath it.trim()
                     }
 
@@ -49,8 +49,8 @@ class CensorColumnConfigurator extends ColumnConfigurator {
         }
     }
 
-    String getConceptPaths() {
+    List<String> getConceptPaths() {
         // empty conceptPaths are allowed (required=false)
-        getStringParam(keyForConceptPaths, false)
+        getStringsListParam(keyForConceptPaths, false)
     }
 }

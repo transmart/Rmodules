@@ -1,7 +1,7 @@
 package jobs
 
-import jobs.misc.AnalysisConstraints
 import jobs.steps.ParametersFileStep
+import jobs.steps.RCommandsStep
 import jobs.steps.Step
 import jobs.steps.WriteFileStep
 import org.apache.log4j.Logger
@@ -11,17 +11,14 @@ import org.springframework.context.MessageSource
 
 import javax.annotation.Resource
 
-abstract class AbstractAnalysisJob {
+import static jobs.steps.AbstractDumpStep.getDEFAULT_OUTPUT_FILE_NAME
 
-    static final String PARAM_ANALYSIS_CONSTRAINTS = 'analysisConstraints'
+abstract class AbstractAnalysisJob {
 
     Logger log = Logger.getLogger(getClass())
 
     @Autowired
     UserParameters params
-
-    @Autowired
-    AnalysisConstraints analysisConstraints
 
     @Autowired
     MessageSource messageSource
@@ -74,7 +71,18 @@ abstract class AbstractAnalysisJob {
                         fileName: 'README.txt',
                         fileContent: messageSource.getMessage("jobs.${analysisName}.readmeFileContent", null, null, null))
         ]
-        stepList += prepareSteps()
+
+        stepList += prepareDataSteps()
+
+        if (RStatements) {
+            stepList << new RCommandsStep(
+                    temporaryDirectory: temporaryDirectory,
+                    scriptsDirectory: scriptsDirectory,
+                    rStatements: RStatements,
+                    studyName: studyName,
+                    params: params,
+                    extraParams: RExtraParams)
+        }
 
         // build status list
         setStatusList(stepList.collect({ it.statusName }).grep())
@@ -90,7 +98,7 @@ abstract class AbstractAnalysisJob {
         updateStatus('Completed', forwardPath)
     }
 
-    abstract protected List<Step> prepareSteps()
+    abstract protected List<Step> prepareDataSteps()
 
     abstract protected List<String> getRStatements()
 
@@ -106,4 +114,9 @@ abstract class AbstractAnalysisJob {
     }
 
     abstract protected getForwardPath()
+
+    protected Map getRExtraParams() {
+        [inputFileName: DEFAULT_OUTPUT_FILE_NAME]
+    }
+
 }

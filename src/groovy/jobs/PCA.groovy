@@ -17,7 +17,6 @@ class PCA extends HighDimensionalOnlyJob {
                 params: params)
     }
 
-
     final List<String> RStatements = [
             '''source('$pluginDirectory/PCA/LoadPCA.R')''',
                 '''PCA.loader(

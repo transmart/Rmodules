@@ -32,6 +32,11 @@ class BinningColumnConfigurator extends ColumnConfigurator {
                 compose(decorateColumn, createDecoratorClosure()))
     }
 
+    @Override
+    List<String> getConceptPaths() {
+        innerConfigurator.conceptPaths
+    }
+
     boolean isBinningEnabled() {
         getStringParam(keyForDoBinning).equalsIgnoreCase('true') &&
                 (!additionalEnablingCheck || additionalEnablingCheck(params))

@@ -23,19 +23,24 @@ class OptionalColumnConfiguratorDecorator extends ColumnConfigurator {
 
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
-        ColumnConfigurator configuratorToUse
-
-        if (getStringParam(keyForEnabled, false)) {
-            configuratorToUse = generalCase
-        } else {
-            configuratorToUse = fallback
-        }
-
         if (!configuratorToUse.header) {
             configuratorToUse.header = header
         }
 
         configuratorToUse.doAddColumn decorateColumn
+    }
+
+    private ColumnConfigurator getConfiguratorToUse() {
+        if (getStringParam(keyForEnabled, false)) {
+            generalCase
+        } else {
+            fallback
+        }
+    }
+
+    @Override
+    List<String> getConceptPaths() {
+        configuratorToUse.conceptPaths
     }
 
     void setConstantColumnFallback(Object columnValue) {

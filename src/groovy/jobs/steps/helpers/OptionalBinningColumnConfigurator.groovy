@@ -50,11 +50,9 @@ class OptionalBinningColumnConfigurator extends ColumnConfigurator {
     @Autowired
     ApplicationContext appCtx
 
-    private void setupInnerConfigurator(String conceptPaths) {
+    private void setupInnerConfigurator(List<String> conceptPaths) {
 
-        boolean emptyConcept = (conceptPaths == '')
-
-        if (emptyConcept) {
+        if (!conceptPaths) {
             //when required we will never reach here
             log.debug("Not required and no value for $keyForConceptPaths, " +
                     "assuming constant value column")
@@ -94,10 +92,10 @@ class OptionalBinningColumnConfigurator extends ColumnConfigurator {
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
 
-        def conceptPaths = getConceptPaths()
+        List<String> conceptPaths = getConceptPaths()
         setupInnerConfigurator(conceptPaths)
 
-        if (conceptPaths != '') {
+        if (conceptPaths) {
 
             if (!binningConfigurator.binningEnabled &&
                     !(innerConfigurator instanceof CategoricalColumnConfigurator) &&
@@ -133,8 +131,8 @@ class OptionalBinningColumnConfigurator extends ColumnConfigurator {
         keyForSearchKeywordId = "div${keyPart.capitalize()}VariablePathway"
     }
 
-    String getConceptPaths() {
+    List<String> getConceptPaths() {
         //if required this will fail on empty conceptPaths
-        getStringParam(keyForConceptPaths, required)
-    }    
+        getStringsListParam(keyForConceptPaths, required)
+    }
 }

@@ -1,10 +1,10 @@
 package jobs
 
 import jobs.steps.*
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.GroupNamesHolder
 import jobs.steps.helpers.MultiNumericClinicalVariableColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -16,15 +16,12 @@ import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
 
 @Component
 @Scope('job')
-class CorrelationAnalysis extends AbstractAnalysisJob {
+class CorrelationAnalysis extends AbstractLowDimensionalAnalysisJob {
     @Autowired
     SimpleAddColumnConfigurator primaryKeyColumnConfigurator
 
     @Autowired
     MultiNumericClinicalVariableColumnConfigurator columnConfigurator
-
-    @Autowired
-    Table table
 
     GroupNamesHolder holder = new GroupNamesHolder()
 
@@ -40,27 +37,21 @@ class CorrelationAnalysis extends AbstractAnalysisJob {
     }
 
     @Override
-    protected List<Step> prepareSteps() {
+    protected List<Step> prepareDataSteps() {
 
         List<Step> steps = []
 
+        steps << dumpHeaderConceptsFileStep
+
         steps << new BuildTableResultStep(
                 table: table,
-                configurators: [ primaryKeyColumnConfigurator, columnConfigurator])
+                configurators: columnConfigurators)
 
         steps << new CorrelationAnalysisDumpDataStep(
                 table: table,
                 temporaryDirectory: temporaryDirectory,
                 groupNamesHolder:   holder,
                 outputFileName: DEFAULT_OUTPUT_FILE_NAME)
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
 
         steps
     }
@@ -72,6 +63,14 @@ class CorrelationAnalysis extends AbstractAnalysisJob {
             '''Correlation.loader(input.filename='$inputFileName',
                     correlation.by='$correlationBy',
                     correlation.method='$correlationType')'''
+        ]
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+            primaryKeyColumnConfigurator,
+            columnConfigurator,
         ]
     }
 
