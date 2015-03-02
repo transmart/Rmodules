@@ -87,6 +87,10 @@ class ContextNumericVariableColumnConfigurator extends ColumnConfigurator {
             multiHighDimConfigurator.keyForConceptPath   = value
             return
         }
+        if (name == 'keyForDataType') {
+            multiHighDimConfigurator.keyForDataType   = value
+            return
+        }
 
         boolean found = false
         if (multiClinicalConfigurator.hasProperty(name)) {
@@ -99,6 +103,9 @@ class ContextNumericVariableColumnConfigurator extends ColumnConfigurator {
         }
         if (!found) {
             throw new MissingPropertyException(name, getClass())
+        }
+        if (super.hasProperty(name)) {
+            super.setProperty(name, value)
         }
     }
 }

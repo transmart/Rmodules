@@ -54,10 +54,6 @@ class HighDimensionColumnConfigurator extends ColumnConfigurator {
     @Autowired
     private ResultInstanceIdsHolder resultInstanceIdsHolder
 
-    @Lazy private List<String> conceptPaths = {
-        getStringParam(keyForConceptPath).split(/\|/) as List
-    }()
-
     @Lazy private HighDimensionDataTypeResource subResource = {
         String dataType = getStringParam(keyForDataType)
         highDimensionResource.getSubResourceForType dataType
@@ -183,4 +179,10 @@ class HighDimensionColumnConfigurator extends ColumnConfigurator {
                 decorateColumn.call(highDimColumn),
                 tabularResults.keySet())
     }
+
+    @Override
+    List<String> getConceptPaths() {
+        getStringsListParam(keyForConceptPath)
+    }
+
 }

@@ -96,6 +96,15 @@ abstract class ColumnConfigurator {
         v
     }
 
+    protected final List<String> getStringsListParam(String key, boolean required = true) {
+        def concatenatedValues = getStringParam(key, required)
+        if (concatenatedValues) {
+            concatenatedValues.split(/\|/).findAll()
+        } else {
+            []
+        }
+    }
+
     protected  compose(Closure<Column> externalDecorate, Closure<Column> ourDecorate) {
         { Column orig ->
             externalDecorate.call(ourDecorate.call(orig))
@@ -109,5 +118,8 @@ abstract class ColumnConfigurator {
     final protected getTable() {
         table
     }
+
+
+    abstract List<String> getConceptPaths()
 
 }

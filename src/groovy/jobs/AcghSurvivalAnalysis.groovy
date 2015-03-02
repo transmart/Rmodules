@@ -1,10 +1,11 @@
 package jobs
 
+import jobs.misc.AnalysisConstraints
 import jobs.steps.*
 import jobs.steps.helpers.CensorColumnConfigurator
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.NumericColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,11 +13,12 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import org.transmartproject.core.dataquery.highdim.HighDimensionResource
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
-
 @Component
 @Scope('job')
-class AcghSurvivalAnalysis extends AbstractAnalysisJob implements InitializingBean {
+class AcghSurvivalAnalysis extends AbstractLowDimensionalAnalysisJob implements InitializingBean {
+
+    @Autowired
+    AnalysisConstraints analysisConstraints
 
     @Autowired
     HighDimensionResource highDimensionResource
@@ -29,9 +31,6 @@ class AcghSurvivalAnalysis extends AbstractAnalysisJob implements InitializingBe
 
     @Autowired
     CensorColumnConfigurator censoringConfigurator
-
-    @Autowired
-    Table table
 
     @Override
     void afterPropertiesSet() throws Exception {
@@ -48,19 +47,18 @@ class AcghSurvivalAnalysis extends AbstractAnalysisJob implements InitializingBe
     }
 
     void configureCensoringVariableConfigurator() {
-        censoringConfigurator.header             = 'CENSOR'
+        censoringConfigurator.header = 'CENSOR'
         censoringConfigurator.keyForConceptPaths = 'censoringVariable'
     }
 
-    protected List<Step> prepareSteps() {
+    protected List<Step> prepareDataSteps() {
         List<Step> steps = []
 
+        steps << dumpHeaderConceptsFileStep
+
         steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        timeVariableConfigurator,
-                        censoringConfigurator,
-                ])
+                table: table,
+                configurators: columnConfigurators)
 
         steps << new MultiRowAsGroupDumpTableResultsStep(
                 table: table,
@@ -75,14 +73,6 @@ class AcghSurvivalAnalysis extends AbstractAnalysisJob implements InitializingBe
         steps << openResultSetStep
 
         steps << createDumpHighDimensionDataStep { -> openResultSetStep.results }
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
 
         steps
     }
@@ -108,6 +98,15 @@ class AcghSurvivalAnalysis extends AbstractAnalysisJob implements InitializingBe
                                       censor               = 'CENSOR',
                                       aberrations          = '$aberrationType',
                                       confidence.intervals = '$confidenceIntervals')'''
+        ]
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+                primaryKeyColumnConfigurator,
+                timeVariableConfigurator,
+                censoringConfigurator,
         ]
     }
 

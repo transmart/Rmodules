@@ -1,17 +1,19 @@
 package jobs
 
-import jobs.misc.AnalysisConstraints
 import jobs.steps.ParametersFileStep
+import jobs.steps.RCommandsStep
 import jobs.steps.Step
+import jobs.steps.WriteFileStep
 import org.apache.log4j.Logger
 import org.quartz.JobExecutionException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 import javax.annotation.Resource
 
-abstract class AbstractAnalysisJob {
+import static jobs.steps.AbstractDumpStep.getDEFAULT_OUTPUT_FILE_NAME
 
-    static final String PARAM_ANALYSIS_CONSTRAINTS = 'analysisConstraints'
+abstract class AbstractAnalysisJob {
 
     Logger log = Logger.getLogger(getClass())
 
@@ -19,7 +21,7 @@ abstract class AbstractAnalysisJob {
     UserParameters params
 
     @Autowired
-    AnalysisConstraints analysisConstraints
+    MessageSource messageSource
 
     @Resource(name = 'jobName')
     String name /* The job instance name */
@@ -30,6 +32,11 @@ abstract class AbstractAnalysisJob {
     Closure updateStatus
 
     Closure setStatusList
+
+    //FIXME Where to get analysis name?
+    String getAnalysisName() {
+        name.split('-')[1]
+    }
 
     File topTemporaryDirectory
 
@@ -58,9 +65,24 @@ abstract class AbstractAnalysisJob {
                  * intermediate data */
                 new ParametersFileStep(
                         temporaryDirectory: temporaryDirectory,
-                        params: params)
+                        params: params),
+                new WriteFileStep(
+                        temporaryDirectory: temporaryDirectory,
+                        fileName: 'README.txt',
+                        fileContent: messageSource.getMessage("jobs.${analysisName}.readmeFileContent", null, null, null))
         ]
-        stepList += prepareSteps()
+
+        stepList += prepareDataSteps()
+
+        if (RStatements) {
+            stepList << new RCommandsStep(
+                    temporaryDirectory: temporaryDirectory,
+                    scriptsDirectory: scriptsDirectory,
+                    rStatements: RStatements,
+                    studyName: studyName,
+                    params: params,
+                    extraParams: RExtraParams)
+        }
 
         // build status list
         setStatusList(stepList.collect({ it.statusName }).grep())
@@ -76,7 +98,7 @@ abstract class AbstractAnalysisJob {
         updateStatus('Completed', forwardPath)
     }
 
-    abstract protected List<Step> prepareSteps()
+    abstract protected List<Step> prepareDataSteps()
 
     abstract protected List<String> getRStatements()
 
@@ -92,4 +114,9 @@ abstract class AbstractAnalysisJob {
     }
 
     abstract protected getForwardPath()
+
+    protected Map getRExtraParams() {
+        [inputFileName: DEFAULT_OUTPUT_FILE_NAME]
+    }
+
 }

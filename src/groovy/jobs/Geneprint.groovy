@@ -11,9 +11,8 @@ import org.springframework.stereotype.Component
 @Scope('job')
 class Geneprint extends HighDimensionalOnlyJob {
 
-
     @Override
-    protected List<Step> prepareSteps() {
+    protected List<Step> prepareDataSteps() {
         List<Step> steps = []
 
         steps << new ParametersFileStep(

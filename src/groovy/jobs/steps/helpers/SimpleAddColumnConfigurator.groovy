@@ -10,12 +10,25 @@ class SimpleAddColumnConfigurator extends ColumnConfigurator {
 
     Column column
 
+    void setColumn(Column column) {
+        if (!header) {
+            header = column.header
+        }
+        this.column = column
+    }
+
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
-        if (header && header != column.header) {
+        if (!header || header != column.header) {
             throw new IllegalStateException('This configurator cannot ' +
                     'control the resulting column\'s header')
         }
         table.addColumn column, ([] as Set)
     }
+
+    @Override
+    List<String> getConceptPaths() {
+        []
+    }
+
 }

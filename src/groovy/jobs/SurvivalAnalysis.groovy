@@ -1,12 +1,11 @@
 package jobs
 
-import jobs.steps.*
 import jobs.steps.helpers.CensorColumnConfigurator
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.NumericColumnConfigurator
 import jobs.steps.helpers.OptionalBinningColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
 import jobs.table.MissingValueAction
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,14 +14,12 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import org.transmartproject.core.dataquery.highdim.projections.Projection
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
-
 /**
  * Created by carlos on 1/20/14.
  */
 @Component
 @Scope('job')
-class SurvivalAnalysis extends AbstractAnalysisJob implements InitializingBean {
+class SurvivalAnalysis extends AbstractLowDimensionalAnalysisJob implements InitializingBean {
 
     @Autowired
     SimpleAddColumnConfigurator primaryKeyColumnConfigurator
@@ -36,9 +33,6 @@ class SurvivalAnalysis extends AbstractAnalysisJob implements InitializingBean {
 
     @Autowired
     CensorColumnConfigurator censoringVariableConfigurator
-
-    @Autowired
-    Table table
 
     @Override
     void afterPropertiesSet() throws Exception {
@@ -78,33 +72,6 @@ class SurvivalAnalysis extends AbstractAnalysisJob implements InitializingBean {
         censoringVariableConfigurator.keyForConceptPaths = 'censoringVariable'
     }
 
-    protected List<Step> prepareSteps() {
-        List<Step> steps = []
-
-        steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        timeVariableConfigurator,
-                        censoringVariableConfigurator,
-                        categoryVariableConfigurator,
-                ])
-
-        steps << new MultiRowAsGroupDumpTableResultsStep(
-                table: table,
-                temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
-
-        steps
-    }
-
     @Override
     protected List<String> getRStatements() {
         [
@@ -115,6 +82,16 @@ class SurvivalAnalysis extends AbstractAnalysisJob implements InitializingBean {
             '''SurvivalCurve.loader(
                 input.filename      = '$inputFileName',
                 concept.time        = '$timeVariable')''',
+        ]
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+            primaryKeyColumnConfigurator,
+            timeVariableConfigurator,
+            censoringVariableConfigurator,
+            categoryVariableConfigurator,
         ]
     }
 

@@ -25,9 +25,6 @@ class BoxPlotController {
 		//This will be the array of image links.
 		def ArrayList<String> imageLinks = new ArrayList<String>()
 		
-		//This will be the array of text file locations.
-		def ArrayList<String> txtFiles = new ArrayList<String>()
-		
 		//Grab the job ID from the query string.
 		String jobName = params.jobName
 		
@@ -121,18 +118,19 @@ class BoxPlotController {
 			}
 			
 			//If we hit the p value extraction marker, pull the values out.
-			if (it.indexOf("p=") >=0 && pvalueExtraction)
+			String pValueLabel = "p-value="
+			if (it.indexOf(pValueLabel) >=0 && pvalueExtraction)
 			{
-				pvalue = it.substring(it.indexOf("p=") + 2).trim();
+				pvalue = it.substring(it.indexOf(pValueLabel) + pValueLabel.length()).trim();
 				
 				if(!groupedData) buf.append("<table class='AnalysisResults'>")
 				buf.append("<tr><th>p-value</th><td>${pvalue}</td></tr>")
 			}
-			
-			if (it.indexOf("f=") >=0 && pvalueExtraction)
+			String fValueLabel = "F-value="
+			if (it.indexOf(fValueLabel) >=0 && pvalueExtraction)
 			{
-				fvalue = it.substring(it.indexOf("f=") + 2).trim();
-				buf.append("<tr><th>F value</th><td>${fvalue}</td></tr>")
+				fvalue = it.substring(it.indexOf(fValueLabel) + fValueLabel.length()).trim();
+				buf.append("<tr><th>F-value</th><td>${fvalue}</td></tr>")
 			}
 			
 			//If we don't have grouped data and haven't written our header, write it now.
@@ -146,7 +144,7 @@ class BoxPlotController {
 			if(summaryExtraction)
 			{
 				//This matches the lines in the ANOVA summary
-				def myRegExp = /"[0-9]+"\s+"(.*)"\s+"\s*(-*[0-9]*\.*[0-9]*)\s*"\s+([0-9]+)/
+				def myRegExp = /"(.*)"\s+"\s*(-*[0-9]*\.*[0-9]*)\s*"\s+([0-9]+)/
 				
 				def matcher = (it =~ myRegExp)
 								
@@ -189,8 +187,10 @@ class BoxPlotController {
 		
 		buf.append("<span class='AnalysisHeader'>Pairwise t-Test p-Values</span><br /><br />")
 		
-		matrixInStr.eachLine
-		{
+		matrixInStr.eachLine {
+			if (!it.trim()) {
+				return
+			}
 			if (it.indexOf("name=") >=0)
 			{
 				//Extract the name from the text file.

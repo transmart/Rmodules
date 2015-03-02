@@ -55,7 +55,7 @@ class MultiNumericClinicalVariableColumnConfigurator extends ColumnConfigurator 
     }
 
     public List<String> getConceptPaths() {
-        getStringParam(keyForConceptPaths).split(/\|/) as List
+        getStringsListParam(keyForConceptPaths)
     }
 
 }

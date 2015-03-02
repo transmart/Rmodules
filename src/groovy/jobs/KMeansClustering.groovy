@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 @Scope('job')
 class KMeansClustering extends HighDimensionalOnlyJob {
 
-
     @Override
     protected Step createDumpHighDimensionDataStep(Closure resultsHolder) {
         new ValueGroupDumpDataStep(

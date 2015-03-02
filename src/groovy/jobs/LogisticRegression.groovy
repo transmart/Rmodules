@@ -1,10 +1,9 @@
 package jobs
 
-import jobs.steps.*
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.NumericColumnConfigurator
 import jobs.steps.helpers.OptionalBinningColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -16,8 +15,8 @@ import javax.annotation.PostConstruct
 
 @Component
 @Scope('job')
-class LogisticRegression extends AbstractAnalysisJob {
-
+class LogisticRegression extends AbstractLowDimensionalAnalysisJob {
+//TODO Test. It was using simple dump instead
     @Autowired
     SimpleAddColumnConfigurator primaryKeyColumnConfigurator
 
@@ -27,9 +26,6 @@ class LogisticRegression extends AbstractAnalysisJob {
     @Autowired
     @Qualifier('general')
     OptionalBinningColumnConfigurator outcomeVariableConfigurator
-
-    @Autowired
-    Table table
 
     @PostConstruct
     void init() {
@@ -62,40 +58,23 @@ class LogisticRegression extends AbstractAnalysisJob {
     }
 
     @Override
-    protected List<Step> prepareSteps() {
-        List<Step> steps = []
-
-        steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        outcomeVariableConfigurator,
-                        independentVariableConfigurator])
-
-        steps << new SimpleDumpTableResultStep(
-                table:              table,
-                temporaryDirectory: temporaryDirectory
-        )
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory:   scriptsDirectory,
-                rStatements:        RStatements,
-                studyName:          studyName,
-                params:             params
-        )
-
-        steps
-    }
-
-    @Override
     protected List<String> getRStatements() {
         [
             '''source('$pluginDirectory/LogisticRegression/LogisticRegressionLoader.R')''',
-            '''LogisticRegressionData.loader(input.filename='outputfile.txt',
+            '''LogisticRegressionData.loader(input.filename='$inputFileName',
                         concept.dependent='$dependentVariable',
                         concept.independent='$independentVariable',
                         binning.enabled='FALSE',
                         binning.variable='')'''
+        ]
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+            primaryKeyColumnConfigurator,
+            outcomeVariableConfigurator,
+            independentVariableConfigurator,
         ]
     }
 

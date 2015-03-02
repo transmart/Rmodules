@@ -17,14 +17,14 @@ class CorrelationAnalysisDumpDataStep extends SimpleDumpTableResultStep {
 
     @Override
     protected List<String> getHeaders() {
-        variableNames
+        ['PATIENT_NUM'] + variableNames
     }
 
     @Override
     protected Iterator getMainRows() {
         Iterators.transform(table.result.iterator(), {
-            Map<String, Object> currentMap = it[0]
-            variableNames.collect { currentMap[it] }
+            Map<String, Object> currentMap = it[1]
+            [it[0]] + variableNames.collect { currentMap[it] }
         } as Function)
     }
 }

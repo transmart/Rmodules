@@ -1,10 +1,11 @@
 package jobs
 
+import jobs.misc.AnalysisConstraints
 import jobs.steps.*
 import jobs.steps.helpers.CategoricalColumnConfigurator
+import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.HighDimensionColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import jobs.table.columns.PrimaryKeyColumn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -13,11 +14,12 @@ import org.transmartproject.core.dataquery.highdim.HighDimensionResource
 
 import javax.annotation.PostConstruct
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
-
 @Component
 @Scope('job')
-class RNASeqGroupTest extends AbstractAnalysisJob {
+class RNASeqGroupTest extends AbstractLowDimensionalAnalysisJob {
+
+    @Autowired
+    AnalysisConstraints analysisConstraints
 
     @Autowired
     HighDimensionResource highDimensionResource
@@ -39,17 +41,15 @@ class RNASeqGroupTest extends AbstractAnalysisJob {
         groupByConfigurator.keyForConceptPaths = 'groupVariable'
     }
 
-    @Autowired
-    Table table
-
     @Override
-    protected List<Step> prepareSteps() {
+    protected List<Step> prepareDataSteps() {
         List<Step> steps = []
+
+        steps << dumpHeaderConceptsFileStep
 
         steps << new BuildTableResultStep(
                 table: table,
-                configurators: [primaryKeyColumnConfigurator,
-                        groupByConfigurator])
+                configurators: columnConfigurators)
 
         steps << new SimpleDumpTableResultStep(table: table,
                 temporaryDirectory: temporaryDirectory,
@@ -63,15 +63,7 @@ class RNASeqGroupTest extends AbstractAnalysisJob {
 
         steps << openResultSetStep
 
-        steps << createDumpHighDimensionDataStep {-> openResultSetStep.results}
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
+        steps << createDumpHighDimensionDataStep { -> openResultSetStep.results }
 
         steps
     }
@@ -91,6 +83,14 @@ class RNASeqGroupTest extends AbstractAnalysisJob {
                         analysisType      = '$analysisType',
                         readcountFileName = 'outputfile.txt',
                         phenodataFileName = 'phenodata.tsv')'''
+        ]
+    }
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        [
+                primaryKeyColumnConfigurator,
+                groupByConfigurator,
         ]
     }
 

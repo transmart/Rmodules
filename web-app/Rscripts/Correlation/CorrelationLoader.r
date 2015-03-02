@@ -13,12 +13,12 @@ Correlation.loader <- function(
 	######################################################
 	library(Cairo)
 	######################################################
-	
+
 	#To be precise I take it this means the significance probability,
 	#that is the chance of getting a value of the correlation as far
 	#from zero in absolute value or more so as the one you got...
-	
-	cor.pvalue <- function(X,method="pearson", use="complete" ) 
+
+	cor.pvalue <- function(X,method="pearson", use="complete" )
 	{
 		dfr = nrow(X) - 2
 		R <- cor(X,method=method, use= use)
@@ -28,24 +28,33 @@ Correlation.loader <- function(
 		R[above] <- 1 - pf(Fstat, 1, dfr)
 		R
 	}
-	
-	
+
+
 	######################################################
 	#Read the correlation data.
-	line.data<-read.delim(input.filename,header=T)
-	
+	line.data <- read.delim(input.filename, header = T, row.names = 1)
+	cleanHeaderNames <- gsub("\"", "", strsplit(readLines(input.filename, n = 1),' *\t *')[[1]])
+    colnames(line.data) <- cleanHeaderNames[-1]
+
 	#This is the name of the output file for the correlation.
 	correlationResultsFile <- "Correlation.txt"
-	
+
 	if(correlation.by == "subject")
 	{
 		write.table(format(cor(line.data,method = correlation.method),digits=3),correlationResultsFile,quote=F,sep="\t",row.names=F,col.names=T)
 	}
-	
+
 	if(correlation.by == "variable")
 	{
-		write.table(format(cor.pvalue(line.data,method = correlation.method),digits=5),correlationResultsFile,quote=F,sep="\t",row.names=F,col.names=T)
-		
+	    correlationMatrix <- format(cor.pvalue(line.data,method = correlation.method), digits = 5)
+
+        # Include column names, row names and method of correlation into body of resultTable.
+        # This allows topleft empty cell to be filled with method of correlation
+        resultTable <- rbind(
+                c(paste("Method=", correlation.method, sep = ""), colnames(correlationMatrix)),
+                cbind(rownames(correlationMatrix), correlationMatrix))
+        write.table(resultTable, correlationResultsFile, quote = F, sep="\t", row.names = F, col.names = F)
+
 		#Put (absolute) correlations on the upper panels,
 		#with size proportional to the correlations.
 		panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
@@ -74,26 +83,26 @@ Correlation.loader <- function(
 		panel.lm <- function(x, y, digits=2, prefix="", ...)
 		{
 			usr <- par("usr"); on.exit(par(usr))
-			par(usr = c(0, 1, 0, 1))     
-			par(new = TRUE) 
+			par(usr = c(0, 1, 0, 1))
+			par(new = TRUE)
 			plot(y~x,pch=20)
 			title(font.main=10,font.sub=9)
 			abline(lm(y~x))
-		}		
-		
+		}
+
 		#This is the name of the output image file.
 		imageFileName <- paste(output.file,".png",sep="")
-		
+
 		#This initializes our image capture object.
-		CairoPNG(file=imageFileName, width=1200, height=600,units = "px")	
-		
+		CairoPNG(file=imageFileName, width=1200, height=600,units = "px")
+
 		#Generate the image.
 		pairs(line.data,upper.panel=panel.cor,diag.panel=panel.hist,lower.panel=panel.lm)
-		
+
 		#Turn of the graphics device to save the image.
-		dev.off()		
-		
+		dev.off()
+
 	}
-	
+
 	######################################################
 }

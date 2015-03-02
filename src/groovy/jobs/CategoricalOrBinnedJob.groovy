@@ -1,18 +1,14 @@
 package jobs
 
-import jobs.steps.*
 import jobs.steps.helpers.BinningColumnConfigurator
 import jobs.steps.helpers.ColumnConfigurator
 import jobs.steps.helpers.OptionalBinningColumnConfigurator
 import jobs.steps.helpers.SimpleAddColumnConfigurator
-import jobs.table.Table
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.transmartproject.core.dataquery.highdim.projections.Projection
 
-import static jobs.steps.AbstractDumpStep.DEFAULT_OUTPUT_FILE_NAME
-
-abstract class CategoricalOrBinnedJob extends AbstractAnalysisJob implements InitializingBean {
+abstract class CategoricalOrBinnedJob extends AbstractLowDimensionalAnalysisJob implements InitializingBean {
 
     @Autowired
     SimpleAddColumnConfigurator primaryKeyColumnConfigurator
@@ -20,34 +16,6 @@ abstract class CategoricalOrBinnedJob extends AbstractAnalysisJob implements Ini
     abstract ColumnConfigurator getIndependentVariableConfigurator()
 
     abstract ColumnConfigurator getDependentVariableConfigurator()
-
-    @Autowired
-    Table table
-
-    protected List<Step> prepareSteps() {
-        List<Step> steps = []
-
-        steps << new BuildTableResultStep(
-                table:         table,
-                configurators: [primaryKeyColumnConfigurator,
-                        independentVariableConfigurator,
-                        dependentVariableConfigurator,])
-
-        steps << new MultiRowAsGroupDumpTableResultsStep(
-                table: table,
-                temporaryDirectory: temporaryDirectory,
-                outputFileName: DEFAULT_OUTPUT_FILE_NAME)
-
-        steps << new RCommandsStep(
-                temporaryDirectory: temporaryDirectory,
-                scriptsDirectory: scriptsDirectory,
-                rStatements: RStatements,
-                studyName: studyName,
-                params: params,
-                extraParams: [inputFileName: DEFAULT_OUTPUT_FILE_NAME])
-
-        steps
-    }
 
     protected void configureConfigurator(OptionalBinningColumnConfigurator configurator,
                                          String keyBinPart,
@@ -72,6 +40,15 @@ abstract class CategoricalOrBinnedJob extends AbstractAnalysisJob implements Ini
         binningColumnConfigurator.keyForBinDistribution = "binDistribution${keyBinPart.capitalize()}"
         binningColumnConfigurator.keyForBinRanges       = "binRanges${keyBinPart.capitalize()}"
         binningColumnConfigurator.keyForVariableType    = "variableType${keyBinPart.capitalize()}"
+    }
+
+
+    @Override
+    protected List<ColumnConfigurator> getColumnConfigurators() {
+        return [
+            independentVariableConfigurator,
+            dependentVariableConfigurator,
+        ]
     }
 
 }

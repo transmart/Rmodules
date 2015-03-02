@@ -4,7 +4,8 @@ import java.util.regex.Pattern
 
 class ConceptUtils {
 
-    static final String SEP = '\\'
+    static final String PARTS_SEP = '\\'
+    static final String CONCEPTS_SEP = '|'
 
     private static shortenToUniqueTails(List<List<String>> partsList, int step = 0) {
         int revPos = -(step + 1)
@@ -37,9 +38,33 @@ class ConceptUtils {
      * @return shortened and normalized concept paths
      */
     static List<String> shortestUniqueTails(List<String> conceptPathes) {
-        List<List<String>> conceptsParts = conceptPathes.collect { it.split(Pattern.quote(SEP)).findAll() }
+        List<List<String>> conceptsParts = conceptPathes.collect { it.split(Pattern.quote(PARTS_SEP)).findAll() }
         shortenToUniqueTails(conceptsParts)
-        conceptsParts.collect { SEP + it.join(SEP) + SEP }
+        conceptsParts.collect { PARTS_SEP + it.join(PARTS_SEP) + PARTS_SEP }
     }
 
+    //TODO This functionality ovrlaps with {@see ConceptKey}
+    /**
+     * Return part of the concept path
+     * @param conceptsString
+     * @param deepLevel 0-leaf, 1-parent,...
+     * @return
+     */
+    private static Set<String> getParts(String conceptsString, int deepLevel) {
+        def concepts = conceptsString.split(Pattern.quote(CONCEPTS_SEP))
+        concepts.collect { String concept ->
+            def parts = concept.split(Pattern.quote(PARTS_SEP)).findAll()
+            if (parts.size() > deepLevel) {
+                PARTS_SEP + parts[-(deepLevel + 1)] + PARTS_SEP
+            }
+        }.findAll().toSet()
+    }
+
+    static Set<String> getParentFolders(String conceptsString) {
+        getParts(conceptsString, 1)
+    }
+
+    static Set<String> getLeafFolders(String conceptsString) {
+        getParts(conceptsString, 0)
+    }
 }

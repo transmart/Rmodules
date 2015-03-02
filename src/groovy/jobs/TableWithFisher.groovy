@@ -45,4 +45,5 @@ class TableWithFisher extends CategoricalOrBinnedJob {
     protected getForwardPath() {
         """/tableWithFisher/fisherTableOut?jobName=$name"""
     }
+
 }

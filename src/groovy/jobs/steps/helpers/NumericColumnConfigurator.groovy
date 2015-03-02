@@ -99,4 +99,8 @@ class NumericColumnConfigurator extends ColumnConfigurator {
         keyForLog10           = "div${keyPart.capitalize()}VariableLog10"
     }
 
+    List<String> getConceptPaths() {
+        getStringsListParam(keyForConceptPath, required)
+    }
+
 }

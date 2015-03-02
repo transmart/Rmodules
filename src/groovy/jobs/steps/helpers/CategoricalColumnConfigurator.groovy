@@ -20,11 +20,11 @@ class CategoricalColumnConfigurator extends ColumnConfigurator {
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
 
-        String conceptPaths = getConceptPaths()
+        List<String> conceptPaths = getConceptPaths()
 
-        if (conceptPaths != '') {
+        if (conceptPaths) {
             Set<ClinicalVariable> variables =
-                    conceptPaths.split(/\|/).collect {
+                    conceptPaths.collect {
                         clinicalDataRetriever.createVariableFromConceptPath it.trim()
                     }
 
@@ -49,8 +49,8 @@ class CategoricalColumnConfigurator extends ColumnConfigurator {
         }
     }
 
-    String getConceptPaths() {
+    List<String> getConceptPaths() {
         //if required this will fail on empty conceptPaths
-        getStringParam(keyForConceptPaths, required)
+        getStringsListParam(keyForConceptPaths, required)
     }
 }

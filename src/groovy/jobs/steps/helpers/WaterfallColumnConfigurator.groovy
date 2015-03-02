@@ -59,6 +59,11 @@ class WaterfallColumnConfigurator extends ColumnConfigurator {
 
     }
 
+    @Override
+    List<String> getConceptPaths() {
+        numericColumnConfigurator.conceptPaths
+    }
+
     void setProperty(String name, Object value) {
         boolean found = false
 
