@@ -6,13 +6,7 @@ acgh.frequency.plot <- function
   library(Cairo)
 
   # read the data
-  dat       <- read.table('outputfile.txt'  , header=TRUE, sep='\t', quote='"', as.is=TRUE      , check.names=FALSE, stringsAsFactors = FALSE)
-  phenodata <- read.table('phenodata.tsv', header=TRUE, sep='\t', quote='"', strip.white=TRUE, check.names=FALSE, stringsAsFactors = FALSE)
-
-  # Determine the groups (NA and '' are discarded)
-  groupnames <- unique(phenodata[,column])
-  groupnames <- groupnames[!is.na(groupnames)]
-  groupnames <- groupnames[groupnames!='']
+  dat <- read.table('outputfile.txt'  , header=TRUE, sep='\t', quote='"', as.is=TRUE      , check.names=FALSE, stringsAsFactors = FALSE)
 
   # get the data-information columns
   first.data.col <- min(grep('chip', names(dat)), grep('flag', names(dat)))
@@ -20,6 +14,21 @@ acgh.frequency.plot <- function
 
   # We only need the flag-columns (posible values: [-1,0,1,2] -> [loss,norm,gain,amp])
   calls <- as.matrix(dat[,grep('flag', colnames(dat)), drop=FALSE])
+
+  # try reading "phenodata.tsv"
+  if (file.exists('phenodata.tsv')) {
+      phenodata   <- read.table('phenodata.tsv', header=TRUE, sep='\t', quote='"', strip.white=TRUE, check.names=FALSE, stringsAsFactors = FALSE)
+  } else {
+      samples             <- sub('flag.', '', colnames(calls))
+      groups              <- 'All'
+      phenodata           <- data.frame(samples, groups)
+      colnames(phenodata) <- c('PATIENT_NUM', column)
+  }
+
+  # Determine the groups (NA and '' are discarded)
+  groupnames <- unique(phenodata[,column])
+  groupnames <- groupnames[!is.na(groupnames)]
+  groupnames <- groupnames[groupnames!='']
 
   # Determine 'gain' and 'loss' for each group
   for (group in groupnames) 
@@ -30,8 +39,9 @@ acgh.frequency.plot <- function
       highdimColumnsMatchingGroupIds <- highdimColumnsMatchingGroupIds[which(!is.na(highdimColumnsMatchingGroupIds))]
       group.calls   <- calls[ , highdimColumnsMatchingGroupIds, drop=FALSE]
 
-      data.info[, paste('gain.freq.', group, sep='')] <- rowSums(group.calls > 0) / ncol(group.calls)
-      data.info[, paste('loss.freq.', group, sep='')] <- rowSums(group.calls < 0) / ncol(group.calls)
+      # We only use the values we know (hom.del, loss, gain, ampl)
+      data.info[, paste('gain.freq.', group, sep='')] <- rowSums(group.calls==1  | group.calls==2 ) / ncol(group.calls)
+      data.info[, paste('loss.freq.', group, sep='')] <- rowSums(group.calls==-1 | group.calls==-2) / ncol(group.calls)
   }
 
   # Replace chromosome X with number 23 to get only integer column values
@@ -102,4 +112,4 @@ acgh.frequency.plot <- function
 
   dev.off()
 }
-
+ 
