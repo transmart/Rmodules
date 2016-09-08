@@ -9,7 +9,7 @@ class RNASeqgroupTestController {
     def grailsApplication;
 
     final
-    def DEFAULT_FIELDS = ['genes', 'logFC', 'logCPM', 'PValue', 'FDR'] as Set
+    def DEFAULT_FIELDS = ['regionname', 'genesymbol', 'logFC', 'logCPM', 'PValue', 'FDR'] as Set
     final Set DEFAULT_NUMBER_FIELDS = ['logFC', 'logCPM', 'PValue', 'FDR'] as Set
 
     private getConfig() {
