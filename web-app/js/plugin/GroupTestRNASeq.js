@@ -90,10 +90,17 @@ var RNASeqGroupTestInputWidget = Ext.extend(GenericAnalysisInputBar, {
  */
 var _rnaseqgrouptestgrid_columns = [
     {
-        id: 'genes', // id assigned so we can apply custom css (e.g. .x-grid-col-topic b { color:#333 })
-        header: "genes",
-        dataIndex: 'genes',
-        width: 400,
+        id: 'regionname',
+        header: "regionname",
+        dataIndex: 'regionname',
+        width: 200,
+        sortable: true
+    },
+    {
+        id: 'genesymbol',
+        header: "genesymbol",
+        dataIndex: 'genesymbol',
+        width: 200,
         sortable: true
     },
     { id: 'logFC',
@@ -425,7 +432,8 @@ var RNASeqGroupTestView = Ext.extend(GenericAnalysisView, {
                     baseParams: {jobName: jobName},
 
                     fields: [
-                        'genes',
+                        'regionname',
+                        'genesymbol',
                         {name: 'logFC', type: 'float'},
                         {name: 'logCPM', type: 'float'},
                         {name: 'PValue', type: 'float'},
