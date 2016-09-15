@@ -26,16 +26,6 @@ freqPlot_simple <- function (column, groupnames, phenodata, calls, data.info){
       data.info[, paste('loss.freq.', group, sep='')] <- rowSums(group.calls==-1 | group.calls==-2) / ncol(group.calls)
   }
 
-  # Replace chromosome X with number 23 to get only integer column values
-  data.info$chromosome[data.info$chromosome=='X'] <- 23
-  data.info$chromosome[data.info$chromosome=='XY'] <- 24
-  data.info$chromosome[data.info$chromosome=='Y'] <- 25
-  data.info$chromosome[data.info$chromosome=='M'] <- 26
-  data.info$chromosome[data.info$chromosome=='[:alpha:]'] <- 0
-  data.info$chromosome[data.info$chromosome==''] <- 0
-  data.info$chromosome <- as.integer(data.info$chromosome)
-  # Order by chromosome and start bp to ensure correct chromosome labels in frequency plots
-  data.info <- data.info[with(data.info,order(chromosome,start)),]
 
   # Helper function to create frequency-plot for 1 group
   FreqPlot <- function(data, group, main = 'Frequency Plot',...)
@@ -163,9 +153,24 @@ acgh.frequency.plot <- function ( column = 'group') {
   # We only need the flag-columns (posible values: [-1,0,1,2] -> [loss,norm,gain,amp])
   calls <- as.matrix(dat[,grep('flag', colnames(dat)), drop=FALSE])
 
+  # Replace chromosome X with number 23 to get only integer column values (for sorting)
+  temp.chromosome <- data.info$chromosome
+  data.info$chromosome[data.info$chromosome=='X'] <- 23
+  data.info$chromosome[data.info$chromosome=='XY'] <- 24
+  data.info$chromosome[data.info$chromosome=='Y'] <- 25
+  data.info$chromosome[data.info$chromosome=='M'] <- 26
+  data.info$chromosome[data.info$chromosome=='[:alpha:]'] <- 0
+  data.info$chromosome[data.info$chromosome==''] <- 0
+  data.info$chromosome <- as.integer(data.info$chromosome)
+  # Order by chromosome and start bp to ensure correct chromosome labels in frequency plots
+  data.info <- data.info[with(data.info,order(chromosome,start)),]
   # Check if we are having overlapping regions (qDANseq cannot handle this)
   overlapping <- data.info[(data.info$start      <  shiftRow(data.info$end, -1)       ) & 
                            (data.info$chromosome == shiftRow(data.info$chromosome, -1)), ]
+  # Put original chromosome naming back, except for unknown values which we set to '0'
+  temp.chromosome[data.info$chromosome==0] <- '0'
+  data.info$chromosome <- temp.chromosome
+
   if (nrow(overlapping) > 1)
   {
 	print("Using simple approach...")
