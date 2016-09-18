@@ -123,7 +123,9 @@ freqPlot_qdnaseq <- function (column, groupnames, phenodata, calls, data.info){
       row.names(temp) <- paste(data.info[,1], ":", data.info[,2], "-", data.info[,3], sep="")
       copyNumbersCalled@featureData@data <- temp
       copyNumbersCalled@assayData$calls <- group.calls
-      frequencyPlot(copyNumbersCalled, main=paste('Frequency Plot for "', group, '"', sep=''), xlab='chromosome (base pairs)')
+      # Like to use "xlab", but results in error with R 3.2 (OK with R 3.3) ?
+      frequencyPlot(copyNumbersCalled, main=paste('Frequency Plot for "', group, '"', sep=''), sub='(base pairs)')
+      #frequencyPlot(copyNumbersCalled, main=paste('Frequency Plot for "', group, '"', sep=''), xlab='chromosome (base pairs)')
   }
 
   dev.off()
