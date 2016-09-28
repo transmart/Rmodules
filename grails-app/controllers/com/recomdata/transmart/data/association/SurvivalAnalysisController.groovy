@@ -216,19 +216,22 @@ class SurvivalAnalysisController {
 			{
 
 				String[] strArray = it.split();
-				Integer columnCount = 8
+				Integer columnCount = strArray.size()
 				Integer columnStart = 1
-				
+				Integer iskip
+
+
 				//For each class, extract the name.
 				if (strArray[0].indexOf("classList=") >=0)
 				{
 					bufBody.append("<tr><th>" + strArray[0].replace("classList=","").replace("_"," ") + "</th>");
+                                        iskip = 8 - columnCount
 				}
 				else
 				{
 					bufBody.append("<tr><th>All Subjects</th>");
-					columnCount = 7
 					columnStart = 0
+					iskip = 7 - columnCount
 				}
 
 				for(int i = columnStart; i < columnCount; i++) 
@@ -240,13 +243,18 @@ class SurvivalAnalysisController {
 						value = "infinity";
 					}
 					bufBody.append("<td>" + value + "</td>");
+                                        // Fill in duplicates for missing columns at start of values
+                                        while(iskip) {
+                                            bufBody.append("<td>" + value + "</td>");
+                                            iskip--;
+                                        }
 				}
 				
 				bufBody.append("</tr>");
 			}
 
 			//If we get records in the line, then we know the records are on the next line.
-			if(it.indexOf("records") >=0) recordsLine = true
+			if(it.indexOf(" events ") >=0) recordsLine = true
 			
 		}
 
