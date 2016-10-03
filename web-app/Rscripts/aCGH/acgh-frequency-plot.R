@@ -148,6 +148,22 @@ acgh.frequency.plot <- function ( column = 'group') {
   groupnames <- groupnames[!is.na(groupnames)]
   groupnames <- groupnames[groupnames!='']
 
+  # Make sure "dat" is properly ordered (chromosome,start)
+  dat$chromosome[dat$chromosome=='X'] <- '23'
+  dat$chromosome[dat$chromosome=='XY'] <- '24'
+  dat$chromosome[dat$chromosome=='Y'] <- '25'
+  dat$chromosome[dat$chromosome=='M'] <- '26'
+  dat$chromosome[dat$chromosome=='[:alpha:]'] <- '0'
+  dat$chromosome[dat$chromosome==''] <- '0'
+  dat$chromosome <- as.integer(dat$chromosome)
+  # Do the ordering
+  dat <- dat[with(dat,order(chromosome,start)),]
+  dat$chromosome[dat$chromosome==0] <- '0'
+  dat$chromosome[dat$chromosome==23] <- 'X'
+  dat$chromosome[dat$chromosome==24] <- 'XY'
+  dat$chromosome[dat$chromosome==25] <- 'Y'
+  dat$chromosome[dat$chromosome==26] <- 'M'
+
   # get the data-information columns
   first.data.col <- min(grep('chip', names(dat)), grep('flag', names(dat)))
   data.info      <- dat[,1:(first.data.col-1)]
@@ -155,23 +171,9 @@ acgh.frequency.plot <- function ( column = 'group') {
   # We only need the flag-columns (posible values: [-1,0,1,2] -> [loss,norm,gain,amp])
   calls <- as.matrix(dat[,grep('flag', colnames(dat)), drop=FALSE])
 
-  # Replace chromosome X with number 23 to get only integer column values (for sorting)
-  temp.chromosome <- data.info$chromosome
-  data.info$chromosome[data.info$chromosome=='X'] <- 23
-  data.info$chromosome[data.info$chromosome=='XY'] <- 24
-  data.info$chromosome[data.info$chromosome=='Y'] <- 25
-  data.info$chromosome[data.info$chromosome=='M'] <- 26
-  data.info$chromosome[data.info$chromosome=='[:alpha:]'] <- 0
-  data.info$chromosome[data.info$chromosome==''] <- 0
-  data.info$chromosome <- as.integer(data.info$chromosome)
-  # Order by chromosome and start bp to ensure correct chromosome labels in frequency plots
-  data.info <- data.info[with(data.info,order(chromosome,start)),]
   # Check if we are having overlapping regions (qDANseq cannot handle this)
   overlapping <- data.info[(data.info$start      <  shiftRow(data.info$end, -1)       ) & 
                            (data.info$chromosome == shiftRow(data.info$chromosome, -1)), ]
-  # Put original chromosome naming back, except for unknown values which we set to '0'
-  temp.chromosome[data.info$chromosome==0] <- '0'
-  data.info$chromosome <- temp.chromosome
 
   if (nrow(overlapping) > 1)
   {
