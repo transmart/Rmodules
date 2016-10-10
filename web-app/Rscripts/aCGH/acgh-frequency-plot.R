@@ -1,37 +1,19 @@
-acgh.frequency.plot <- function
-(
-  column = 'group'
-)
+# Helper function: shift vector number of positions
+shiftRow <- function(x, shift=1L) 
 {
-  library(Cairo)
+  	ind        <- (1L + shift):(length(x) + shift)
+  	ind[ind<1] <- NA
+  	
+	return(x[ind])
+}
 
-  # read the data
-  dat <- read.table('outputfile.txt'  , header=TRUE, sep='\t', quote='"', as.is=TRUE      , check.names=FALSE, stringsAsFactors = FALSE)
+#######################################################################################
+# General frequency-plot function. It takes the number of probes as the horizontal axis.
+# This might result in so called "accordeon" chromosomes
 
-  # get the data-information columns
-  first.data.col <- min(grep('chip', names(dat)), grep('flag', names(dat)))
-  data.info      <- dat[,1:(first.data.col-1)]
-
-  # We only need the flag-columns (posible values: [-1,0,1,2] -> [loss,norm,gain,amp])
-  calls <- as.matrix(dat[,grep('flag', colnames(dat)), drop=FALSE])
-
-  # try reading "phenodata.tsv"
-  if (file.exists('phenodata.tsv')) {
-      phenodata   <- read.table('phenodata.tsv', header=TRUE, sep='\t', quote='"', strip.white=TRUE, check.names=FALSE, stringsAsFactors = FALSE)
-  } else {
-      samples             <- sub('flag.', '', colnames(calls))
-      groups              <- 'All'
-      phenodata           <- data.frame(samples, groups)
-      colnames(phenodata) <- c('PATIENT_NUM', column)
-  }
-
-  # Determine the groups (NA and '' are discarded)
-  groupnames <- unique(phenodata[,column])
-  groupnames <- groupnames[!is.na(groupnames)]
-  groupnames <- groupnames[groupnames!='']
-
+freqPlot_simple <- function (column, groupnames, phenodata, calls, data.info){
   # Determine 'gain' and 'loss' for each group
-  for (group in groupnames) 
+  for (group in groupnames)
   {
       group.samples <- which(phenodata[,column] == group & !is.na(phenodata[,column]))
       group.ids     <- phenodata[group.samples, "PATIENT_NUM"]
@@ -44,19 +26,9 @@ acgh.frequency.plot <- function
       data.info[, paste('loss.freq.', group, sep='')] <- rowSums(group.calls==-1 | group.calls==-2) / ncol(group.calls)
   }
 
-  # Replace chromosome X with number 23 to get only integer column values
-  data.info$chromosome[data.info$chromosome=='X'] <- 23
-  data.info$chromosome[data.info$chromosome=='XY'] <- 24
-  data.info$chromosome[data.info$chromosome=='Y'] <- 25
-  data.info$chromosome[data.info$chromosome=='M'] <- 26
-  data.info$chromosome[data.info$chromosome=='[:alpha:]'] <- 0
-  data.info$chromosome[data.info$chromosome==''] <- 0
-  data.info$chromosome <- as.integer(data.info$chromosome)
-  # Order by chromosome and start bp to ensure correct chromosome labels in frequency plots
-  data.info <- data.info[with(data.info,order(chromosome,start)),]
 
   # Helper function to create frequency-plot for 1 group
-  FreqPlot <- function(data, group, main = 'Frequency Plot',...) 
+  FreqPlot <- function(data, group, main = 'Frequency Plot',...)
   {
     par(mar=c(5,4,4,5) + 0.1)
     cols <- c('blue', 'red')
@@ -72,7 +44,8 @@ acgh.frequency.plot <- function
       b.freq <- rep(b.freq, data$num.probes)
     }
 
-    plot(a.freq, ylim=c(-1,1), type='h', col=cols['gain'], xlab='chromosomes', ylab='frequency', xaxt='n', yaxt='n', main=main, ...)
+    # Make clear the horizontal axis is based on number of probes
+    plot(a.freq, ylim=c(-1,1), type='h', col=cols['gain'], xlab='chromosome (number of probes)', ylab='frequency', xaxt='n', yaxt='n', main=main, ...)
     points(-b.freq, type='h', col=cols['loss'])
     abline(h=0)
     abline(v=0, lty='dashed')
@@ -105,11 +78,115 @@ acgh.frequency.plot <- function
   filename <- paste('frequency-plot','.png',sep='')
   CairoPNG(file=filename, width=1000, height=length(groupnames) * 400)
   par(mfrow = c(length(groupnames),1))
-  for (group in groupnames) 
+  for (group in groupnames)
   {
     FreqPlot(data.info, group, paste('Frequency Plot for "', group, '"', sep=''))
   }
 
   dev.off()
 }
- 
+
+#######################################################################################
+# frequency-plot function. It uses the package qDNAseq (bioConductor) to do that.
+# Restriction: defined chromosomal-regions in "data.info" cannnot overlap.
+
+freqPlot_qdnaseq <- function (column, groupnames, phenodata, calls, data.info){
+  library(Biobase)
+  library(QDNAseq)
+
+  # We need a "QDNAseqCopyNumbers" structure.
+  data(LGG150)
+  readCounts <- LGG150
+  readCountsFiltered <- applyFilters(readCounts)
+  readCountsFiltered <- estimateCorrection(readCountsFiltered)
+  copyNumbers <- correctBins(readCountsFiltered)
+  copyNumbersNormalized <- normalizeBins(copyNumbers)
+  copyNumbersSmooth <- smoothOutlierBins(copyNumbersNormalized)
+  copyNumbersSegmented <- segmentBins(copyNumbersSmooth)
+  copyNumbersSegmented <- normalizeSegmentedBins(copyNumbersSegmented)
+  copyNumbersCalled <- callBins(copyNumbersSegmented)
+  unlockBinding("calls", copyNumbersCalled@assayData)
+  
+  # Determine 'gain' and 'loss' for each group
+  filename <- paste('frequency-plot','.png',sep='')
+  CairoPNG(file=filename, width=1000, height=length(groupnames) * 400)
+  par(mfrow = c(length(groupnames),1))
+  for (group in groupnames) 
+  {
+      group.samples <- which(phenodata[,column] == group & !is.na(phenodata[,column]))
+      group.ids     <- phenodata[group.samples, "PATIENT_NUM"]
+      highdimColumnsMatchingGroupIds <- match(paste("flag.",group.ids,sep=""), colnames(calls))
+      highdimColumnsMatchingGroupIds <- highdimColumnsMatchingGroupIds[which(!is.na(highdimColumnsMatchingGroupIds))]
+      group.calls   <- calls[ , highdimColumnsMatchingGroupIds, drop=FALSE]
+
+      temp <- data.frame(data.info[,1:3])
+      row.names(temp) <- paste(data.info[,1], ":", data.info[,2], "-", data.info[,3], sep="")
+      copyNumbersCalled@featureData@data <- temp
+      copyNumbersCalled@assayData$calls <- group.calls
+      # Like to use "xlab", but results in error with R 3.2 (OK with R 3.3) ?
+      frequencyPlot(copyNumbersCalled, main=paste('Frequency Plot for "', group, '"', sep=''), sub='(base pairs)')
+      #frequencyPlot(copyNumbersCalled, main=paste('Frequency Plot for "', group, '"', sep=''), xlab='chromosome (base pairs)')
+  }
+
+  dev.off()
+}
+
+
+#######################################################################################
+
+acgh.frequency.plot <- function ( column = 'group') {
+
+  library(reshape)
+  library(Cairo)
+  
+  # read the data
+  dat       <- read.table('outputfile.txt'  , header=TRUE, sep='\t', quote='"', as.is=TRUE      , check.names=FALSE, stringsAsFactors = FALSE)
+  phenodata <- read.table('phenodata.tsv', header=TRUE, sep='\t', quote='"', strip.white=TRUE, check.names=FALSE, stringsAsFactors = FALSE)
+
+  # Determine the groups (NA and '' are discarded)
+  groupnames <- unique(phenodata[,column])
+  groupnames <- groupnames[!is.na(groupnames)]
+  groupnames <- groupnames[groupnames!='']
+
+  # Make sure "dat" is properly ordered (chromosome,start)
+  dat$chromosome[dat$chromosome=='X'] <- '23'
+  dat$chromosome[dat$chromosome=='XY'] <- '24'
+  dat$chromosome[dat$chromosome=='Y'] <- '25'
+  dat$chromosome[dat$chromosome=='M'] <- '26'
+  dat$chromosome[dat$chromosome=='[:alpha:]'] <- '0'
+  dat$chromosome[dat$chromosome==''] <- '0'
+  dat$chromosome <- as.integer(dat$chromosome)
+  # Do the ordering
+  dat <- dat[with(dat,order(chromosome,start)),]
+  dat$chromosome[dat$chromosome==0] <- '0'
+  dat$chromosome[dat$chromosome==23] <- 'X'
+  dat$chromosome[dat$chromosome==24] <- 'XY'
+  dat$chromosome[dat$chromosome==25] <- 'Y'
+  dat$chromosome[dat$chromosome==26] <- 'M'
+
+  # get the data-information columns
+  first.data.col <- min(grep('chip', names(dat)), grep('flag', names(dat)))
+  data.info      <- dat[,1:(first.data.col-1)]
+
+  # We only need the flag-columns (posible values: [-1,0,1,2] -> [loss,norm,gain,amp])
+  calls <- as.matrix(dat[,grep('flag', colnames(dat)), drop=FALSE])
+
+  # Check if we are having overlapping regions (qDANseq cannot handle this)
+  overlapping <- data.info[(data.info$start      <  shiftRow(data.info$end, -1)       ) & 
+                           (data.info$chromosome == shiftRow(data.info$chromosome, -1)), ]
+
+  if (nrow(overlapping) > 1)
+  {
+	print("Using simple approach...")
+        print(nrow(overlapping))
+        freqPlot_simple(column, groupnames, phenodata, calls, data.info)
+  }
+  else
+  {
+	print("Using qDNAseq")
+        freqPlot_qdnaseq(column, groupnames, phenodata, calls, data.info)
+  }
+
+}
+
+
