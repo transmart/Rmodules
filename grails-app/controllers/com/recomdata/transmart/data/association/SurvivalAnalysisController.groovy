@@ -63,10 +63,10 @@ class SurvivalAnalysisController {
 		inStr ->
 		
 		//These are the buffers we store the HTML text in.
-		StringBuffer buf = new StringBuffer();
+		StringBuffer buf = new StringBuffer()
 		
 		boolean nextLineHazard = false
-		boolean nextLine95 = false;
+		boolean nextLine95 = false
 		
 		def resultsItems = [:]
 		
@@ -91,9 +91,10 @@ class SurvivalAnalysisController {
 			else if (it.indexOf("se(coef)") >= 0) 
 			{
 				//If we encounter the header for the hazard data, set a flag so we can pick it up on the next pass.
-				nextLineHazard = true;
+				nextLineHazard = true
+				nextLine95 = false  // To ensure that next records containing "classList" are interpreted by the right piece of code
 			}
-			else if (it.indexOf("classList") >= 0 && nextLineHazard == true) 
+			else if (it.indexOf("classList") >= 0 && nextLineHazard) 
 			{
 				//Split the current line.
 				String[] resultArray = it.split();
@@ -109,15 +110,14 @@ class SurvivalAnalysisController {
 				resultsItems[groupName]["HAZARD"] = resultArray[2]
 
 			}
-			else if (it.indexOf("---") >= 0)
-			{
-				nextLineHazard = false
-			}
 			else if (it.indexOf("lower") >= 0) 
 			{
 				nextLine95 = true
+                ///In some cases (i.e. no significance codes) a line with "---" (indicator for the end of hazard data) is not present and therefore nextLineHazard was not set to false
+                // If the header for the 95 data is encountered and nextLine95 is set, unconditionally reset nextLineHazard to avoid next records containing "classList" are interpreted by the wrong piece of code
+				nextLineHazard = false
 			}
-			else if (it.indexOf("classList") >= 0 && nextLine95 == true) 
+			else if (it.indexOf("classList") >= 0 && nextLine95) 
 			{
 				//Split the current line.
 				String[] resultArray = it.split();
