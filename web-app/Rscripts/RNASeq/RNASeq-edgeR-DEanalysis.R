@@ -94,6 +94,7 @@ function
 		}
 
 		# Make sure that the order of the subjects/samples in the readcount columns is consistent with the order of the subjects/samples in the phenodata rows
+		reionGeneSymbol <- countTable[c('regionname', 'genesymbol')]
 		countTable = countTable[grep('^readcount.', colnames(countTable))]
 
         # If provided data set does not contain readcount data at all, stop further processing
@@ -158,7 +159,10 @@ function
 		et 		= exactTest(dge)
 		
 		# Additional multiple testing correction should follow here
-		write.table(file=output_1,topTags(et,n=nrow(countTable)),sep="\t",row.names=FALSE)
+		topTagsTable <- topTags(et,n=nrow(countTable))$table
+		colnames(topTagsTable)[colnames(topTagsTable) == 'genes'] <- 'regionname'
+		topTagsWithGsTable <- merge(reionGeneSymbol, topTagsTable, by='regionname', all=TRUE)
+		write.table(file=output_1, topTagsWithGsTable, sep="\t", row.names=FALSE)
 		write.table(file=output_2,cpm(dge,normalized.lib.sizes=TRUE),sep="\t")
 		write.table(file=output_3,dge$counts,sep="\t")
 		
@@ -271,11 +275,19 @@ function
 		countTable <- read.table(readcountfileName, header=TRUE, sep='\t', quote='"', as.is=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
 		phenodata  <- read.table(phenodatafileName, header=TRUE, sep='\t', quote='"', strip.white=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
 
+		# Make rownames equal to the regionname
+		if ( 'regionname' %in% colnames(countTable) ) {
+		    rownames(countTable) <- countTable$regionname
+		} else {
+		    stop("||FRIENDLY||Expecting readcountTable to at least have a column regionname. Please check your region variable selection and run again.")
+		}
+		
 		# Filter phenodata for patients that have data in countTable
 		phenodata <- phenodata[paste("readcount.",phenodata$PATIENT_NUM,sep="") %in% colnames(countTable), ]
 
 		# Make sure that the order of the subjects/samples in the readcount columns is consistent with the order of the subjects/samples in the phenodata rows
 		# Extract sample list from RNASeq data column names for which readcounts have been observed
+		reionGeneSymbol <- countTable[c('regionname', 'genesymbol')]
 		countTable = countTable[grep('readcount.', colnames(countTable))]
 		samplelist <- sub("readcount.", "" , colnames(countTable))
 
@@ -329,7 +341,10 @@ function
 		fit 	= glmFit(dge,design)
 		print("Performing likelihood ratio tests...")
 		lrt		= glmLRT(fit,coef=2:ngrp)
-		write.table(file=output_1,topTags(lrt,n=nrow(countTable)),sep="\t", row.names=FALSE)
+		topTagsTable <- topTags(lrt,n=nrow(countTable))$table
+		colnames(topTagsTable)[colnames(topTagsTable) == 'genes'] <- 'regionname'
+		topTagsWithGsTable <- merge(reionGeneSymbol, topTagsTable, by='regionname', all=TRUE)
+		write.table(file=output_1, topTagsWithGsTable, sep="\t", row.names=FALSE)
 		write.table(file=output_2,cpm(dge,normalized.lib.sizes=TRUE),sep="\t")
 		write.table(file=output_3,dge$counts,sep="\t")
 		

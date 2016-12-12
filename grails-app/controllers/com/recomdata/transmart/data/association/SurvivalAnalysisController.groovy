@@ -63,10 +63,10 @@ class SurvivalAnalysisController {
 		inStr ->
 		
 		//These are the buffers we store the HTML text in.
-		StringBuffer buf = new StringBuffer();
+		StringBuffer buf = new StringBuffer()
 		
 		boolean nextLineHazard = false
-		boolean nextLine95 = false;
+		boolean nextLine95 = false
 		
 		def resultsItems = [:]
 		
@@ -91,9 +91,10 @@ class SurvivalAnalysisController {
 			else if (it.indexOf("se(coef)") >= 0) 
 			{
 				//If we encounter the header for the hazard data, set a flag so we can pick it up on the next pass.
-				nextLineHazard = true;
+				nextLineHazard = true
+				nextLine95 = false  // To ensure that next records containing "classList" are interpreted by the right piece of code
 			}
-			else if (it.indexOf("classList") >= 0 && nextLineHazard == true) 
+			else if (it.indexOf("classList") >= 0 && nextLineHazard) 
 			{
 				//Split the current line.
 				String[] resultArray = it.split();
@@ -109,15 +110,14 @@ class SurvivalAnalysisController {
 				resultsItems[groupName]["HAZARD"] = resultArray[2]
 
 			}
-			else if (it.indexOf("---") >= 0)
-			{
-				nextLineHazard = false
-			}
 			else if (it.indexOf("lower") >= 0) 
 			{
 				nextLine95 = true
+                ///In some cases (i.e. no significance codes) a line with "---" (indicator for the end of hazard data) is not present and therefore nextLineHazard was not set to false
+                // If the header for the 95 data is encountered and nextLine95 is set, unconditionally reset nextLineHazard to avoid next records containing "classList" are interpreted by the wrong piece of code
+				nextLineHazard = false
 			}
-			else if (it.indexOf("classList") >= 0 && nextLine95 == true) 
+			else if (it.indexOf("classList") >= 0 && nextLine95) 
 			{
 				//Split the current line.
 				String[] resultArray = it.split();
@@ -216,19 +216,22 @@ class SurvivalAnalysisController {
 			{
 
 				String[] strArray = it.split();
-				Integer columnCount = 8
+				Integer columnCount = strArray.size()
 				Integer columnStart = 1
-				
+				Integer iskip
+
+
 				//For each class, extract the name.
 				if (strArray[0].indexOf("classList=") >=0)
 				{
 					bufBody.append("<tr><th>" + strArray[0].replace("classList=","").replace("_"," ") + "</th>");
+                                        iskip = 8 - columnCount
 				}
 				else
 				{
 					bufBody.append("<tr><th>All Subjects</th>");
-					columnCount = 7
 					columnStart = 0
+					iskip = 7 - columnCount
 				}
 
 				for(int i = columnStart; i < columnCount; i++) 
@@ -240,13 +243,18 @@ class SurvivalAnalysisController {
 						value = "infinity";
 					}
 					bufBody.append("<td>" + value + "</td>");
+                                        // Fill in duplicates for missing columns at start of values
+                                        while(iskip) {
+                                            bufBody.append("<td>" + value + "</td>");
+                                            iskip--;
+                                        }
 				}
 				
 				bufBody.append("</tr>");
 			}
 
 			//If we get records in the line, then we know the records are on the next line.
-			if(it.indexOf("records") >=0) recordsLine = true
+			if(it.indexOf(" events ") >=0) recordsLine = true
 			
 		}
 
