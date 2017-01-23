@@ -34,8 +34,8 @@ zscore.file = "zscores.txt"
 
     library(reshape2)
     library(Cairo)
-  	library(ggplot2)
-  	library(plyr)
+    library(ggplot2)
+    library(plyr)
 
     #Prepare the package to capture the image file.
     CairoPNG(file=paste("PCA.png",sep=""),width=400,height=400)
@@ -69,7 +69,7 @@ zscore.file = "zscores.txt"
     mRNAData$PROBE.ID       <- gsub("^\\s+|\\s+$", "",mRNAData$PROBE.ID)
     mRNAData$GENE_SYMBOL    <- gsub("^\\s+|\\s+$", "",mRNAData$GENE_SYMBOL)
     mRNAData$PATIENT.ID     <- gsub("^\\s+|\\s+$", "",mRNAData$PATIENT.ID)
-	mRNAData$SUBSET   	    <- gsub("^\\s+|\\s+$", "",mRNAData$SUBSET)
+    mRNAData$SUBSET         <- gsub("^\\s+|\\s+$", "",mRNAData$SUBSET)
 
     # The PROBE.ID column needs to have the values from GENE_SYMBOL concatenated as a suffix,
     # but only if the latter does not contain a private value (which means that the biomarker was not present in any of the dictionaries)
@@ -77,8 +77,8 @@ zscore.file = "zscores.txt"
     rowsToConcatenate <- grep("^PRIVATE", mRNAData$GENE_SYMBOL, invert = TRUE)
     mRNAData$PROBE.ID[rowsToConcatenate] <- paste(mRNAData$PROBE.ID[rowsToConcatenate], mRNAData$GENE_SYMBOL[rowsToConcatenate],sep="_")
     mRNAData$PROBE.ID <- as.factor(mRNAData$PROBE.ID)
-	 groupValues <- levels(mRNAData$PROBE.ID)
-	 mRNAData$PROBE.ID <- paste("X",as.numeric(mRNAData$PROBE.ID),sep="")
+    groupValues <- levels(mRNAData$PROBE.ID)
+    mRNAData$PROBE.ID <- paste("X",as.numeric(mRNAData$PROBE.ID),sep="")
 
     #Grab only the columns we need for doing the melt/cast.
     mRNAData <- mRNAData[c('PATIENT.ID','VALUE','PROBE.ID')]
@@ -164,12 +164,15 @@ zscore.file = "zscores.txt"
     title(xlab = "Component")
 
     dev.off()
-	
+
+    max.toplot = min(3,numberOfComponents)
 	#Creates the plot of observations
 	scores <- as.data.frame(pca.results$x)
 	scores[,"subset"] <- sub("S2", "Subset 2", sub("S1", "Subset 1", substr(rownames(scores),0,2)))
 	for (i in 1:2){
-    	for(j in (i+1):3){     
+    	    if(i < max.toplot) {
+	    	 for(j in (i+1):max.toplot){
+	      	        print(sprintf("observations plot %d v %d", i, j))
 			tmp <- ggplot(data=scores, aes_string(x=paste("PC", i, sep=""), y=paste("PC", j, sep="")))
 			tmp <- tmp +geom_hline(yintercept=0, colour="gray65")
 			tmp <- tmp +geom_vline(xintercept=0, colour="gray65")
@@ -180,11 +183,14 @@ zscore.file = "zscores.txt"
 			print (tmp)
 			dev.off()
 		}
+	    }
 	}
 	
 	#Creates the circle of correlations
 	for (i in 1:2){
-    	for(j in (i+1):3){
+	    if (i < max.toplot) {
+	        for(j in (i+1):max.toplot){
+	      	        print(sprintf("circle plot %d v %d", i, j))
 			corcir=circle(c(0,0), npoints=100)	
 			correlations=as.data.frame(cor(mRNAData, pca.results$x))
 			arrows=data.frame(genes=rownames(correlations), x1=rep(0, length(pca.results$center)), y1=rep(0,length(pca.results$center)), x2=correlations[,paste("PC", i, sep="")], y2=correlations[,paste("PC", j, sep="")])
@@ -203,6 +209,7 @@ zscore.file = "zscores.txt"
 			print (tmp)
 			dev.off()
 		}
+	    }
 	}
 }
 

@@ -43,7 +43,7 @@ create.qq.plot.single<-function(qqData, df=2){
 	
 	#Remove the log scale from the p-value.
 	#qqData$p.no.log<-10^-(qqData$pvalue)
-	print(qqData)
+##	print(qqData)
 	#Compute the chi square value.
 	qqData$chi.sq<-qchisq(qqData$pvalue, df=df, log.p=F, lower.tail=F)
 	
