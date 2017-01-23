@@ -136,7 +136,7 @@ freqPlot_qdnaseq <- function (column, groupnames, phenodata, calls, data.info){
 
 acgh.frequency.plot <- function ( column = 'group') {
 
-  library(reshape)
+  library(reshape2)
   library(Cairo)
   
   # read the data
