@@ -115,8 +115,8 @@ zscore.file = "zscores.txt"
             sd_rows_matrix<-apply (matrixData,1,sd,na.rm=T)
             matrixData<-matrixData[!is.na(sd_rows_matrix),]                                 # remove markers where sd is NA
             sd_rows_matrix<-sd_rows_matrix[!is.na(sd_rows_matrix)]
-            cutoff_sd<- sd_rows_matrix[order(sd_rows_matrix,decreasing = T)][maxDrawNumber+1] # filter by SD, draw only the top maxDrawNumber
-            matrixData<-matrixData[sd_rows_matrix>cutoff_sd,]
+            indices_to_include <- order(sd_rows_matrix, decreasing = T)[1:maxDrawNumber]      # filter by SD, keep only the top maxDrawNumber
+            matrixData <- matrixData[indices_to_include, ]
     }
 
     #Transpose the matrix to put the sample column into a row.
