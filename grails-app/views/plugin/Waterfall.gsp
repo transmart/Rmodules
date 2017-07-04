@@ -53,8 +53,6 @@
         %{--Tool buttons--}%
         <fieldset class="toolFields">
             <input type="button" value="Run" onClick="waterfallView.submit_job(this.form);" class="runAnalysisBtn">
-            <input type="button" value="Select inputs as Cohort"
-                   onClick="waterfallView.select_input_as_cohort(this.form);"  class="runAnalysisBtn">
         </fieldset>
 
     </form>
