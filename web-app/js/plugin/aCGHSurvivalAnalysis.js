@@ -32,6 +32,18 @@ var _inputpanel_items = ['->', // '->' making it right aligned
         }
     }];
 
+if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGSurvivalAnalysis) {
+    _inputpanel_items.unshift({
+        xtype: 'button',
+        text: 'Help',
+        scale: 'medium',
+        iconCls: 'contextHelpBtn',
+        handler: function () {
+            window.open(GLOBAL.helpUrls.aCGHGSurvivalAnalysis, '_blank');
+        }
+    });
+}
+
 /**
  * list of buttons for intermediate result grid
  * @type {Array}

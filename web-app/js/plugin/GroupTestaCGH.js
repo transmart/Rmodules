@@ -301,6 +301,18 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
                 }
             }];
 
+        if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGroupTest) {
+            gtInputBarBtnList.unshift({
+                xtype: 'button',
+                text: 'Help',
+                scale: 'medium',
+                iconCls: 'contextHelpBtn',
+                handler: function () {
+                    window.open(GLOBAL.helpUrls.aCGHGroupTest, '_blank');
+                }
+            });
+        }
+
         return new Ext.Toolbar({
             height: 30,
             items: gtInputBarBtnList

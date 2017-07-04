@@ -6,6 +6,11 @@
 
     <h2>
         Variable Selection
+        <g:if test="${grailsApplication.config.org.transmartproject.helpUrls.waterfall}">
+            <a target="_blank" href="${grailsApplication.config.org.transmartproject.helpUrls.waterfall}">
+                <img src="${resource(dir: 'images', file: 'help/helpicon_white.jpg')}" alt="Help"/>
+            </a>
+        </g:if>
     </h2>
 
     <form id="analysisForm">

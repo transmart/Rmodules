@@ -122,6 +122,18 @@ var FrequencyPlotView = Ext.extend(GenericAnalysisView, {
             }
         }];
 
+        if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGFrequencyPlot) {
+            _fpInputBarBtnList.unshift({
+                xtype: 'button',
+                text: 'Help',
+                scale: 'medium',
+                iconCls: 'contextHelpBtn',
+                handler: function () {
+                    window.open(GLOBAL.helpUrls.aCGHGFrequencyPlot, '_blank');
+                }
+            });
+        }
+
         return new Ext.Toolbar({
             height: 30,
             items: _fpInputBarBtnList

@@ -9,15 +9,30 @@ var RNASeqgroupTestView;
  * Buttons for Input Panel
  * @type {Array}
  */
-var rgtInputBarBtnList = ['->', {  // '->' making it right aligned
-    xtype: 'button',
-    text: 'Run Analysis',
-    scale: 'medium',
-    iconCls: 'runbutton',
-    handler: function () {
-        RNASeqgroupTestView.submitGroupTestJob();
+var rgtInputBarBtnList = [
+    '->', // '->' making it right aligned
+    {
+        xtype: 'button',
+        text: 'Run Analysis',
+        scale: 'medium',
+        iconCls: 'runbutton',
+        handler: function () {
+            RNASeqgroupTestView.submitGroupTestJob();
+        }
     }
-}];
+];
+
+if (GLOBAL.helpUrls && GLOBAL.helpUrls.rnaSeqGroupTest) {
+    rgtInputBarBtnList.unshift({
+        xtype: 'button',
+        text: 'Help',
+        scale: 'medium',
+        iconCls: 'contextHelpBtn',
+        handler: function () {
+            window.open(GLOBAL.helpUrls.rnaSeqGroupTest, '_blank');
+        }
+    });
+}
 
 var RNASeqGroupTestInputWidget = Ext.extend(GenericAnalysisInputBar, {
 
