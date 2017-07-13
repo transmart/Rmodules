@@ -151,9 +151,9 @@ class OptionalBinningColumnConfiguratorTests {
 
             def res = table.result
             assertThat res, contains(
-                    contains(equalTo("10.0 <= $COLUMN_HEADER < $halfPoint" as String)),
-                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001.0" as String)),
-                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001.0" as String)))
+                    contains(equalTo("10 <= $COLUMN_HEADER < $halfPoint" as String)),
+                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001" as String)),
+                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001" as String)))
         }
     }
 
@@ -194,9 +194,9 @@ class OptionalBinningColumnConfiguratorTests {
 
             //XXX: match to patients
             assertThat res, containsInAnyOrder(
-                    (["5.0 <= $COLUMN_HEADER <= 44.0" as String] * 3 +
-                            ["44.0 < $COLUMN_HEADER <= 66.0" as String] * 3 +
-                            ["66.0 < $COLUMN_HEADER <= 95.0" as String] * 4).collect { equalTo([it]) })
+                    (["5 <= $COLUMN_HEADER <= 44" as String] * 3 +
+                            ["44 < $COLUMN_HEADER <= 66" as String] * 3 +
+                            ["66 < $COLUMN_HEADER <= 95" as String] * 4).collect { equalTo([it]) })
         }
     }
 
@@ -226,8 +226,8 @@ class OptionalBinningColumnConfiguratorTests {
             def res = table.result
 
             assertThat res, containsInAnyOrder(
-                    is(["12.0 <= $COLUMN_HEADER <= 12.0" as String]),
-                    is(["12.0 < $COLUMN_HEADER <= 20.0" as String]),)
+                    is(["12 <= $COLUMN_HEADER <= 12" as String]),
+                    is(["12 < $COLUMN_HEADER <= 20" as String]),)
         }
     }
 
@@ -261,8 +261,8 @@ class OptionalBinningColumnConfiguratorTests {
              * See comment on calculateQuantileRanks */
             println res
             assertThat res, containsInAnyOrder(
-                    (["20.0 <= $COLUMN_HEADER <= 20.0" as String] * 4 +
-                    ["20.0 < $COLUMN_HEADER <= 31.0" as String] * 2).collect { equalTo([it]) })
+                    (["20 <= $COLUMN_HEADER <= 20" as String] * 4 +
+                    ["20 < $COLUMN_HEADER <= 31" as String] * 2).collect { equalTo([it]) })
         }
     }
 
@@ -540,13 +540,13 @@ class OptionalBinningColumnConfiguratorTests {
             def res = table.result
             assertThat res, containsInAnyOrder(
                     contains(allOf(
-                            hasEntry(is('row label 1'), is("10.0 <= $COLUMN_HEADER < 35.0" as String)),
-                            hasEntry(is('row label 2'), is("0.0 <= $COLUMN_HEADER < 50.0" as String)))),
+                            hasEntry(is('row label 1'), is("10 <= $COLUMN_HEADER < 35" as String)),
+                            hasEntry(is('row label 2'), is("0 <= $COLUMN_HEADER < 50" as String)))),
                     contains(allOf(
-                            hasEntry(is('row label 2'), is("50.0 <= $COLUMN_HEADER <= 100.0" as String)))),
+                            hasEntry(is('row label 2'), is("50 <= $COLUMN_HEADER <= 100" as String)))),
                     contains(allOf(
-                            hasEntry(is('row label 1'), is("35.0 <= $COLUMN_HEADER <= 60.0" as String)),
-                            hasEntry(is('row label 2'), is("50.0 <= $COLUMN_HEADER <= 100.0" as String)))))
+                            hasEntry(is('row label 1'), is("35 <= $COLUMN_HEADER <= 60" as String)),
+                            hasEntry(is('row label 2'), is("50 <= $COLUMN_HEADER <= 100" as String)))))
         }
     }
 
@@ -587,16 +587,16 @@ class OptionalBinningColumnConfiguratorTests {
             def res = table.result
             assertThat res, containsInAnyOrder(
                     contains(allOf(
-                            hasEntry(is('row label 1'), is("10.0 <= $COLUMN_HEADER <= 10.0" as String)),
-                            hasEntry(is('row label 2'), is("0.0 <= $COLUMN_HEADER <= 10.0" as String)))),
+                            hasEntry(is('row label 1'), is("10 <= $COLUMN_HEADER <= 10" as String)),
+                            hasEntry(is('row label 2'), is("0 <= $COLUMN_HEADER <= 10" as String)))),
                     contains(allOf(
-                            hasEntry(is('row label 2'), is("0.0 <= $COLUMN_HEADER <= 10.0" as String)))),
+                            hasEntry(is('row label 2'), is("0 <= $COLUMN_HEADER <= 10" as String)))),
                     contains(allOf(
-                            hasEntry(is('row label 1'), is("10.0 < $COLUMN_HEADER <= 61.0" as String)),
-                            hasEntry(is('row label 2'), is("0.0 <= $COLUMN_HEADER <= 10.0" as String)))),
+                            hasEntry(is('row label 1'), is("10 < $COLUMN_HEADER <= 61" as String)),
+                            hasEntry(is('row label 2'), is("0 <= $COLUMN_HEADER <= 10" as String)))),
                     contains(allOf(
-                            hasEntry(is('row label 1'), is("10.0 < $COLUMN_HEADER <= 61.0" as String)),
-                            hasEntry(is('row label 2'), is("10.0 < $COLUMN_HEADER <= 20.0" as String)))))
+                            hasEntry(is('row label 1'), is("10 < $COLUMN_HEADER <= 61" as String)),
+                            hasEntry(is('row label 2'), is("10 < $COLUMN_HEADER <= 20" as String)))))
         }
     }
 

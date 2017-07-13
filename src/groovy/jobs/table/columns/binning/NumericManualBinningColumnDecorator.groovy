@@ -6,12 +6,16 @@ import com.google.common.collect.Maps
 import jobs.table.Column
 import jobs.table.columns.ColumnDecorator
 
+import java.text.DecimalFormat
+
 class NumericManualBinningColumnDecorator implements ColumnDecorator {
 
     @Delegate
     Column inner
 
     List<NumericBinRange> binRanges
+
+    DecimalFormat decimalFormat = new DecimalFormat()
 
     private @Lazy List binNames = {
         def ret = []
@@ -32,7 +36,9 @@ class NumericManualBinningColumnDecorator implements ColumnDecorator {
                         "binRanges[${i - 1}].from. Bad column definition")
             }
 
-            ret << "$lowerBound $op1 $header <= ${binRanges[i].to}".toString()
+            String lowerBoundString = decimalFormat.format(lowerBound)
+            String upperBoundString = decimalFormat.format(binRanges[i].to)
+            ret << "${lowerBoundString} ${op1} ${header} <= ${upperBoundString}".toString()
         }
         ret
     }()

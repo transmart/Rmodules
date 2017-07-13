@@ -10,6 +10,8 @@ import jobs.table.Column
 import jobs.table.columns.ColumnDecorator
 import org.mapdb.Fun
 
+import java.text.DecimalFormat
+
 /**
  * Quantile calculation and rewriting of the results.
  *
@@ -27,6 +29,8 @@ class EvenDistributionBinningColumnDecorator implements ColumnDecorator {
     /* context -> (upper bound -> bin name) */
     private Map<String, NavigableMap<Number, String>> bins =
             Maps.newConcurrentMap()
+
+    DecimalFormat decimalFormat = new DecimalFormat()
 
     static class GroovyNumberComparator implements Comparator<Number> {
         public static GroovyNumberComparator INSTANCE =
@@ -53,7 +57,9 @@ class EvenDistributionBinningColumnDecorator implements ColumnDecorator {
                     sortedValues[quantileRanks[it]]
 
             def op1 = it == 0 ? '<=' : '<'
-            res[upperBound] = "$lowerBound $op1 $header <= $upperBound" as String
+            String lowerBoundString = decimalFormat.format(lowerBound)
+            String upperBoundString = decimalFormat.format(upperBound)
+            res[upperBound] = "${lowerBoundString} ${op1} ${header} <= ${upperBoundString}" as String
         }
 
         res

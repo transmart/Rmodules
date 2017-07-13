@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import org.transmartproject.core.exceptions.InvalidArgumentsException
 
+import java.text.DecimalFormat
+
 @Component
 @Scope('prototype')
 class BinningColumnConfigurator extends ColumnConfigurator {
@@ -25,6 +27,14 @@ class BinningColumnConfigurator extends ColumnConfigurator {
     Closure<Boolean> additionalEnablingCheck
 
     ColumnConfigurator innerConfigurator
+
+    DecimalFormat decimalFormat
+    {
+        decimalFormat = new DecimalFormat()
+        decimalFormat.minimumFractionDigits = 0
+        decimalFormat.maximumFractionDigits = 3
+        decimalFormat.groupingUsed = false
+    }
 
     @Override
     protected void doAddColumn(Closure<Column> decorateColumn) {
@@ -53,7 +63,8 @@ class BinningColumnConfigurator extends ColumnConfigurator {
         if (manualBinning) {
             if (variableContinuous) {
                 new NumericManualBinningColumnDecorator(
-                        binRanges: createBinRanges())
+                        binRanges: createBinRanges(),
+                        decimalFormat: decimalFormat)
             } else {
                 new CategoricalBinningColumnDecorator(
                         transformationMap: createConceptPathMap())
@@ -62,10 +73,12 @@ class BinningColumnConfigurator extends ColumnConfigurator {
             String distribution = getStringParam keyForBinDistribution
             if (distribution == 'EDP') {
                 new EvenDistributionBinningColumnDecorator(
-                        numberOfBins: getStringParam(keyForNumberOfBins) as int)
+                        numberOfBins: getStringParam(keyForNumberOfBins) as int,
+                        decimalFormat: decimalFormat)
             } else if (distribution == 'ESB') {
                 new EvenSpacedBinningColumnDecorator(
-                        numberOfBins: getStringParam(keyForNumberOfBins) as int)
+                        numberOfBins: getStringParam(keyForNumberOfBins) as int,
+                        decimalFormat: decimalFormat)
             } else {
                 throw new InvalidArgumentsException(
                         "Invalid value for $keyForBinDistribution: " +

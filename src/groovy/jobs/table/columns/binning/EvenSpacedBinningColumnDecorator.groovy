@@ -6,6 +6,9 @@ import jobs.table.Column
 import jobs.table.columns.ColumnDecorator
 import org.mapdb.Fun
 
+import java.math.RoundingMode
+import java.text.DecimalFormat
+
 @CompileStatic
 class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
 
@@ -17,14 +20,18 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
     private Map<String, Number> min = [:].withDefault { Double.POSITIVE_INFINITY },
                                 max = [:].withDefault { Double.NEGATIVE_INFINITY }
 
+    DecimalFormat decimalFormat = new DecimalFormat()
+
     private Map<String, List> binNames = { ->
         Map<String, List> ret = [:]
         ret.withDefault { String ctx ->
+            Number minNumber = min[ctx]
+            Number stepRange = ((max[ctx] - minNumber) / numberOfBins)
             ret[ctx] = (1..numberOfBins).collect { Integer it ->
-                def lowerBound = min[ctx] + ((max[ctx] - min[ctx]) / numberOfBins) * (it - 1)
-                def upperBound = min[ctx] + ((max[ctx] - min[ctx]) / numberOfBins) * it
-                def op2 = it == numberOfBins ? '<=' : '<'
-                "$lowerBound <= $header $op2 $upperBound" as String
+                String lowerBound = decimalFormat.format(minNumber + stepRange * (it - 1))
+                String upperBound = decimalFormat.format(minNumber + stepRange * it)
+                String op2 = it == numberOfBins ? '<=' : '<'
+                "${lowerBound} <= ${header} ${op2} ${upperBound}" as String
             }
         }
     }()
