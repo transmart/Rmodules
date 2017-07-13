@@ -52,8 +52,8 @@ class EvenDistributionBinningColumnDecorator implements ColumnDecorator {
                     sortedValues[-1] :
                     sortedValues[quantileRanks[it]]
 
-            def op1 = it == 0 ? '≤' : '<'
-            res[upperBound] = "$lowerBound $op1 $header ≤ $upperBound" as String
+            def op1 = it == 0 ? '<=' : '<'
+            res[upperBound] = "$lowerBound $op1 $header <= $upperBound" as String
         }
 
         res

@@ -23,8 +23,8 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
             ret[ctx] = (1..numberOfBins).collect { Integer it ->
                 def lowerBound = min[ctx] + ((max[ctx] - min[ctx]) / numberOfBins) * (it - 1)
                 def upperBound = min[ctx] + ((max[ctx] - min[ctx]) / numberOfBins) * it
-                def op2 = it == numberOfBins ? '≤' : '<'
-                "$lowerBound ≤ $header $op2 $upperBound" as String
+                def op2 = it == numberOfBins ? '<=' : '<'
+                "$lowerBound <= $header $op2 $upperBound" as String
             }
         }
     }()
