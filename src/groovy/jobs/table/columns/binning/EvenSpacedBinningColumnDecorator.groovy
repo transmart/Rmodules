@@ -6,7 +6,6 @@ import jobs.table.Column
 import jobs.table.columns.ColumnDecorator
 import org.mapdb.Fun
 
-import java.math.RoundingMode
 import java.text.DecimalFormat
 
 @CompileStatic
@@ -22,16 +21,23 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
 
     DecimalFormat decimalFormat = new DecimalFormat()
 
-    private Map<String, List> binNames = { ->
+    private Map<String, List<Map>> binsByContext = { ->
         Map<String, List> ret = [:]
         ret.withDefault { String ctx ->
             Number minNumber = min[ctx]
             Number stepRange = ((max[ctx] - minNumber) / numberOfBins)
             ret[ctx] = (1..numberOfBins).collect { Integer it ->
-                String lowerBound = decimalFormat.format(minNumber + stepRange * (it - 1))
-                String upperBound = decimalFormat.format(minNumber + stepRange * it)
-                String op2 = it == numberOfBins ? '<=' : '<'
-                "${lowerBound} <= ${header} ${op2} ${upperBound}" as String
+                Number lowerBound = minNumber + stepRange * (it - 1)
+                String lowerBoundString = decimalFormat.format(lowerBound)
+                Number upperBound = minNumber + stepRange * it
+                String upperBoundString = decimalFormat.format(upperBound)
+                String op = it == 1 ? '<=' : '<'
+                [
+                        min: lowerBound,
+                        max: upperBound,
+                        label: "${lowerBoundString} ${op} ${header} <= ${upperBoundString}" as String
+                ]
+
             }
         }
     }()
@@ -77,16 +83,10 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
         innerResult
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     private String transform(String ctx, Number value) {
-        /* normalize to interval [0, numberOfBins] */
-        def norm = (value - min[ctx]) * inverseBinInterval[ctx]
-        def bin = (norm as int)
-        assert bin >= 0
-        if (bin == numberOfBins) { //happens for max
-            bin--
-        }
-
-        binNames[ctx][bin]
+        List<Map> bins = binsByContext[ctx]
+        bins.find { it.min <= value && it.max >= value }.label
     }
 
     // NOTE: assumes there's no transformer in inner

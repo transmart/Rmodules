@@ -136,7 +136,7 @@ class OptionalBinningColumnConfiguratorTests {
         TabularResult<Double, AssayColumn> highDimResult = mock(TabularResult)
         def sampleAssays = createSampleAssays(3)
         highDimResult.indicesList.returns(sampleAssays)
-        def halfPoint = (10.0 + 9001.0) / 2
+        def halfPoint = (10.0 + 9001.0) / 2.0
         highDimResult.iterator().returns([
                 createRowForAssays(sampleAssays, [10.0, halfPoint, 9001.0], 'row label')].
                 iterator())
@@ -151,9 +151,9 @@ class OptionalBinningColumnConfiguratorTests {
 
             def res = table.result
             assertThat res, contains(
-                    contains(equalTo("10 <= $COLUMN_HEADER < $halfPoint" as String)),
-                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001" as String)),
-                    contains(equalTo("$halfPoint <= $COLUMN_HEADER <= 9001" as String)))
+                    contains(equalTo("10 <= $COLUMN_HEADER <= $halfPoint" as String)),
+                    contains(equalTo("10 <= $COLUMN_HEADER <= $halfPoint" as String)),
+                    contains(equalTo("$halfPoint < $COLUMN_HEADER <= 9001" as String)))
         }
     }
 
