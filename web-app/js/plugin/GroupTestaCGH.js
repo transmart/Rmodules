@@ -53,9 +53,11 @@ var GroupTestInputWidget = Ext.extend(GenericAnalysisInputBar, {
                 isDroppable: true,
                 notifyFunc: dropOntoCategorySelection,
                 toolTipTitle: 'Tip: Group',
-                toolTipTxt: 'Drag and drop clinical variables to associate copy number data with. Please keep in mind that only ' +
-                    'one variable can be compared, e.g. gender (female) with gender (male); not gender (female) with age ' +
-                    '(>60)!'
+                toolTipTxt: 'Drag and drop categorical data nodes to define groups to associate copy number data with. ' +
+                'Please keep in mind that only groups belonging to a single variable can be compared, ' +
+                'e.g. Male and Female (both Gender), but not e.g. Male and MSI (Gender and Microsatellite instability).' +
+                'Note: Only two groups are plotted, even when more groups are tested. ' +
+                'Numerical and high dimensional data nodes cannot be used to define groups.'
             },
             {
                 title: 'Statistical Test',
