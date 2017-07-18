@@ -25,10 +25,10 @@
                     %{--Independent variable--}%
                     <div class="highDimContainer">
                         <h3>Independent Variable</h3>
-                        <span class="hd-notes">Select a variable from the Data Set Explorer Tree and drag it into the box.
-                        At least one of the variables selected should be a continuous variable (e.g. Age) and one should be a
-                        categorical variable (e.g. Tumor Stage).  A continuous variable can be categorized using the binning
-                        option below.</span>
+                        <span class="hd-notes">Select a data node from the Data Set Explorer Tree and drag it into the box.
+                        At least one of the data nodes should be numerical (e.g. Age) or high dimensional (e.g. Genes) and one should be categorical (e.g. Tumor Stage).
+                        For high dimensional data nodes it is required to select a gene using the button below the box.
+                        Numerical and high dimensional data nodes can be categorized using the binning option below.</span>
                         <div id='divIndependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divIndependentVariable', true)">High Dimensional Data</button>
@@ -112,10 +112,10 @@
                     %{--Dependent variable--}%
                     <div class="highDimContainer">
                         <h3>Dependent Variable</h3>
-                        <span class="hd-notes">Select a variable  from the Data Set Explorer Tree and drag it into the
-                        box.  At least one of the variables selected should be a continuous variable (e.g. Age) and one
-                        should be a categorical variable (e.g. Tumor Stage).  A continuous variable can be categorized
-                        using the binning option below.</span>
+                        <span class="hd-notes">Select a data node from the Data Set Explorer Tree and drag it into the box.
+                        At least one of the data nodes should be numerical (e.g. Age) or high dimensional (e.g. Genes) and one should be categorical (e.g. Tumor Stage).
+                        For high dimensional data nodes it is required to select a gene using the button below the box.
+                        Numerical and high dimensional data nodes can be categorized using the binning option below.</span>
                         <div id='divDependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divDependentVariable', true)">High Dimensional Data</button>
