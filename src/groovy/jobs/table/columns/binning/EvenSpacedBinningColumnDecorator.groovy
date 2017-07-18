@@ -16,6 +16,8 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
 
     int numberOfBins
 
+    static final double ERROR = 0.001
+
     private Map<String, Number> min = [:].withDefault { Double.POSITIVE_INFINITY },
                                 max = [:].withDefault { Double.NEGATIVE_INFINITY }
 
@@ -86,7 +88,16 @@ class EvenSpacedBinningColumnDecorator implements ColumnDecorator {
     @CompileStatic(TypeCheckingMode.SKIP)
     private String transform(String ctx, Number value) {
         List<Map> bins = binsByContext[ctx]
-        bins.find { it.min <= value && it.max >= value }.label
+        if (bins) {
+            def bin = bins.find { it.min <= value && it.max >= value }
+            if (bin) {
+                return bin.label
+            } else if (Math.abs(bins[0].min - value) < ERROR) {
+                return bins[0].label
+            } else if (Math.abs(bins[-1].max - value) < ERROR) {
+                return bins[-1].label
+            }
+        }
     }
 
     // NOTE: assumes there's no transformer in inner
