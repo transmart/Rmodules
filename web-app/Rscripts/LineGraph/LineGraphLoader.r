@@ -120,7 +120,8 @@ LineGraph.plotter <- function(
 	#Plotting the line.
 
   #Determine Y-axis label.
-  if (is.null(HDD.data.type)) yLabel <- dataOutput$TIMEPOINT[1] else yLabel <- HDD.data.type
+  yLabel <- "Measurement"
+  if (is.character(HDD.data.type)) yLabel <- HDD.data.type
   
 	#Depending on whether we wish to plot individual data, and otherwise the specific graph type, we create different graphs.
 	if (plot.individuals) {
