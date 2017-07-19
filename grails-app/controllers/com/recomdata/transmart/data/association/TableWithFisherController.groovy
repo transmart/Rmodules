@@ -142,7 +142,7 @@ class TableWithFisherController {
 				//Check to see if we need to fill in the blank cell.
 				if(fillInBlank)
 				{
-					buf.append("<td class='blankCell'>&nbsp;</td>")
+					buf.append("<th>Independent &#x2193; / Dependent &#x2192;</th>")
 				}
 				
 				Integer rowCounter = 0;

@@ -25,9 +25,9 @@ class TableWithFisher extends CategoricalOrBinnedJob {
                 new PrimaryKeyColumn(header: 'PATIENT_NUM')
 
         configureConfigurator independentVariableConfigurator,
-                'indep', 'independent', 'X'
+                'indep', 'independent', 'IND'
         configureConfigurator dependentVariableConfigurator,
-                'dep',   'dependent',   'Y'
+                'dep',   'dependent',   'DEP'
     }
 
     @Override

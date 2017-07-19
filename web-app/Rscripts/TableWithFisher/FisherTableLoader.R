@@ -31,8 +31,8 @@ FisherTable.loader <- function(
 	line.data<-read.delim(input.filename,header=T)
 	######################################################
 	
-	if(length(unique(line.data$X)) < 2) stop("||FRIENDLY||The Fisher test requires at least two groups for each variable. The intersection of the groups you selected for the independent variable with the data available in the dependent variable yielded only one group with a none zero number of subjects in the independent variable. Please verify your input and try again.")
-	if(length(unique(line.data$Y)) < 2) stop("||FRIENDLY||The Fisher test requires at least two groups for each variable. The intersection of the groups you selected for the dependant variable with the data available in the independent variable yielded only one group with a none zero number of subjects in the dependant variable. Please verify your input and try again.")
+	if(length(unique(line.data$IND)) < 2) stop("||FRIENDLY||The Fisher test requires at least two groups for each variable. The intersection of the groups you selected for the independent variable with the data available in the dependent variable yielded only one group with a none zero number of subjects in the independent variable. Please verify your input and try again.")
+	if(length(unique(line.data$DEP)) < 2) stop("||FRIENDLY||The Fisher test requires at least two groups for each variable. The intersection of the groups you selected for the dependant variable with the data available in the independent variable yielded only one group with a none zero number of subjects in the dependant variable. Please verify your input and try again.")
 	
 	######################################################
 	if(("GROUP" %in% colnames(line.data)) && ("GROUP.1" %in% colnames(line.data)))
@@ -90,17 +90,17 @@ FisherTable.loader.single <- function(dataChunk,splitColumn,fileNameQualifier)
 	if(splitColumn %in% colnames(dataChunk)) write(paste("name=",currentGroup,sep=""), file=countsFile,append=T)
 	
 	#Remove unwanted column.
-	dataChunk <- dataChunk[c('X','Y')]
+	dataChunk <- dataChunk[c('IND','DEP')]
 	
 	#Recreate the factors to take out the levels we don't use in this group.
-	dataChunk$X <- factor(dataChunk$X)
-	dataChunk$Y <- factor(dataChunk$Y)
+	dataChunk$IND <- factor(dataChunk$IND)
+	dataChunk$DEP <- factor(dataChunk$DEP)
 	
 	#Generate count table.
 	countTable <- table(dataChunk)
 
 	#Do not continue with statistical tests if data requirements are not met
-    if (nlevels(dataChunk$X) < 2 || nlevels(dataChunk$Y) < 2) {
+    if (nlevels(dataChunk$IND) < 2 || nlevels(dataChunk$DEP) < 2) {
       write(paste("Not enough levels for Fisher or chi-square test."), file=statisticalTestsResultsFile,append=T)
       write.table(countTable,countsFile,quote=F,sep="\t",row.names=T,col.names=T,append=T)
       return()
