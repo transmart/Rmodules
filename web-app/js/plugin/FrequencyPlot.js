@@ -202,6 +202,17 @@ var FrequencyPlotView = Ext.extend(GenericAnalysisView, {
                                     _this.downloadFrequencyPlotResult(jobName);
                                 }
                             });
+                            if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGFrequencyPlotFiles) {
+                                new Ext.Button({
+                                    text: 'Help on Result',
+                                    scale: 'medium',
+                                    iconCls: 'contextHelpBtn',
+                                    renderTo: 'resultHelpBtn',
+                                    handler: function () {
+                                        window.open(GLOBAL.helpUrls.aCGHGFrequencyPlotFiles, '_blank');
+                                    }
+                                });
+                            }
                         }
                     });
             },

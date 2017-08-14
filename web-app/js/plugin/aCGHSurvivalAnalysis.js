@@ -634,6 +634,17 @@ var SurvivalAnalysisACGHView = Ext.extend(GenericAnalysisView, {
                                         return survivalAnalysisACGHView.intermediateResultGrid.downloadIntermediateResult(jobName);
                                     }
                                 });
+                                if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGSurvivalAnalysisFiles) {
+                                    menuButtons = menuButtons.concat({
+                                        xtype: 'button',
+                                        text: 'Help on Result',
+                                        scale: 'medium',
+                                        iconCls: 'contextHelpBtn',
+                                        handler: function () {
+                                            window.open(GLOBAL.helpUrls.aCGHGSurvivalAnalysisFiles, '_blank');
+                                        }
+                                    });
+                                }
                             }
 
                             finishRendering(menuButtons);

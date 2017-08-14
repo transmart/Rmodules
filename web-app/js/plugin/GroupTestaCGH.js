@@ -483,6 +483,17 @@ var GroupTestView = Ext.extend(GenericAnalysisView, {
                                     _this.downloadGroupTestResult(jobName);
                                 }
                             });
+                            if (GLOBAL.helpUrls && GLOBAL.helpUrls.aCGHGroupTestFiles) {
+                                new Ext.Button({
+                                    text: 'Help on Result',
+                                    scale: 'medium',
+                                    iconCls: 'contextHelpBtn',
+                                    renderTo: 'resultHelpBtn',
+                                    handler: function () {
+                                        window.open(GLOBAL.helpUrls.aCGHGroupTestFiles, '_blank');
+                                    }
+                                });
+                            }
                         }
                     });
             },

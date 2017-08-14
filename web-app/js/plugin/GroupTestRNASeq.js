@@ -413,6 +413,17 @@ var RNASeqGroupTestView = Ext.extend(GenericAnalysisView, {
                                     _this.downloadRNASeqGroupTestResult(jobName);
                                 }
                             });
+                            if (GLOBAL.helpUrls && GLOBAL.helpUrls.rnaSeqGroupTestFiles) {
+                                new Ext.Button({
+                                    text: 'Help on Result',
+                                    scale: 'medium',
+                                    iconCls: 'contextHelpBtn',
+                                    renderTo: 'resultHelpBtn',
+                                    handler: function () {
+                                        window.open(GLOBAL.helpUrls.rnaSeqGroupTestFiles, '_blank');
+                                    }
+                                });
+                            }
                         }
                     });
             },

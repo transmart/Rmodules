@@ -51,7 +51,13 @@
         <g:if test="${zipLink}">
             <div>
                 <a class='AnalysisLink' class='downloadLink' href="${resource(file: zipLink)}">Download raw R data</a>
-            </div>
+				<g:if test="${grailsApplication.config.org.transmartproject.helpUrls.boxPlotFiles}">
+                    &nbsp;
+					<a target="_blank" href="${grailsApplication.config.org.transmartproject.helpUrls.boxPlotFiles}">
+						<img src="${resource(dir: 'images', file: 'help/helpicon_white.jpg')}" alt="Help"/>
+					</a>
+				</g:if>
+			</div>
         </g:if>
 		
 	</form>

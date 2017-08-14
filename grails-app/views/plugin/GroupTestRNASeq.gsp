@@ -20,6 +20,7 @@
 		%{--Download button --}%
 		<div class="resultToolBar">
 			<div id="downloadBtn"></div>
+			<div id="resultHelpBtn"></div>
 		</div>
         <table class="newspaper-a">
             <caption>Table 1: Input Parameters </caption>
