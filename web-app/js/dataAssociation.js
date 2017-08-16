@@ -67,16 +67,6 @@ function createAdvancedWorkflowMenu(result) {
                 disabled : false,
                 menu : advMenu
                     }
-                ,'->',
-                {
-                    text: 'Save to PDF',
-                    iconCls: 'savepdfbutton',
-                    hidden: false,
-                    id: 'savetopdfbtn',
-                    handler: function() {
-                        generatePdfFromHTML('dataAssociationPanel', 'DataAssociation.pdf');
-                    }
-                }
             );
     }
 }
@@ -206,7 +196,7 @@ function checkPreviousAnalysis()
     //If the user clicks submit but they've run a analysis recently check with them to make sure they want to clear the results.
     if(GLOBAL.AnalysisRun)
     {
-        return confirm('When you navigate to a new analysis the current analysis results will be cleared! If you would like your results to be saved click the "Save to PDF" button. Are you sure you wish to navigate away?');
+        return confirm('When you navigate to a new analysis the current analysis results will be cleared! Are you sure you wish to navigate away?');
     }
 
     return true;
