@@ -160,8 +160,8 @@ acgh.group.test <- function
     labels <- c(0.01, 0.05, 0.025, 0.1, 0.25, 0.5, 1)
     axis(side=4, at=-log10(labels) - 1, labels=labels, las=1)
     mtext('FDR', side=4, line=3)
-    mtext(groupnames[1], side=2, line=3, at=0.5)
-    mtext(groupnames[2], side=2, line=3, at=-0.5)
+    mtext(groupnames[1], side=3, adj=0)
+    mtext(groupnames[2], side=1, adj=0)
   }
 
   # Not necessary to use aberration specific file name for image file
