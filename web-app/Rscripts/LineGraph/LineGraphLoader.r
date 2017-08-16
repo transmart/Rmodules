@@ -60,14 +60,12 @@ LineGraph.loader <- function(
         Plot.error.message("Dataset is empty. Cannot plot LineGraph.");
       }
       else {
-        groupData <- line.data[which(line.data$PLOT_GROUP==plotGroup),]
-        p <- LineGraph.plotter(groupData, graphType, plot.individuals, HDD.data.type)
         probes <- unlist(strsplit(as.character(plotGroup), '[|]'))
         plotTitle <- ''
-        if(probes[1] != '') plotTitle <- paste('Intensity of', probes[1], '.') 
+        if(probes[1] != '') plotTitle <- paste('Log intensity of', probes[1], '.')
         if(length(probes)>1) plotTitle <- paste(plotTitle, 'Binned value of', probes[2] , '.')
-        p <- p + labs(title = plotTitle)
-        fileIter <- fileIter + 1
+        groupData <- line.data[which(line.data$PLOT_GROUP==plotGroup),]
+        p <- LineGraph.plotter(groupData, graphType, plot.individuals, HDD.data.type, plotTitle)
         print(p)
         dev.off()
       }
@@ -80,7 +78,8 @@ LineGraph.plotter <- function(
   data.to.plot,
   graphType,
   plot.individuals,
-  HDD.data.type
+  HDD.data.type,
+  plotTitle = ''
 )
 {
 
@@ -170,7 +169,12 @@ LineGraph.plotter <- function(
 	#Set the legend attributes.
 	p <- p + theme(legend.title = element_text(size = 20,face="bold"));
 	p <- p + theme(legend.text = element_text(size = 15,face="bold"));
-	p <- p + theme(legend.title=element_blank())
+    if (is.na(plotTitle) || plotTitle == '') {
+        p <- p + theme(legend.title=element_blank())
+    } else {
+        p <- p + labs(colour = plotTitle)
+        p <- p + labs(shape = plotTitle)
+    }
 
 	p <- p + geom_point(size=4);
 	
