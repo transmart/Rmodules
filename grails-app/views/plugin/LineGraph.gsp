@@ -30,7 +30,7 @@
                         %{--Data).--}%
 
                           Drag one or multiple <b>numerical</b> or <b>high dimensional</b> data nodes from the Data Set Explorer Tree into the box.
-                          For high dimensional data nodes, use the button below the box to select one or more genes.
+                          For high dimensional data nodes, use the button below the box to select one or more genes.<br /><br />
                         </span>
                         <div id='divDependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">

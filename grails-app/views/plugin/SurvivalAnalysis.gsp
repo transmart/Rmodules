@@ -22,9 +22,9 @@
             <div class="three-layout-left">
                 <fieldset class="inputFields">
                     <h3>Time</h3>
-                    <div class="divInputLabel">Select time variable from the Data Set Explorer Tree and drag it into
+                    <span>Select time variable from the Data Set Explorer Tree and drag it into
                     the box.  For example, "Survival Time".
-                    This variable is required.</div>
+                    This variable is required.<br /><br /><br /><br /><br /></span>
                     <div id='divTimeVariable' class="queryGroupIncludeLong divInputBox"></div>
                     <div class="highDimBtns">
                         <button type="button" onclick="survivalAnalysisView.clear_high_dimensional_input('divTimeVariable')">Clear</button>
@@ -39,12 +39,12 @@
                 <fieldset class="inputFields">
                     <div class="highDimContainer">
                         <h3>Category</h3>
-                        <div class="divInputLabel">
+                        <span>
                             Select two or more related <b>categorical</b> data nodes on which you would like to sort the cohort and drag it into the box.
                             For example, "Cancer Stage I and II". A folder may be dragged in to include the leaf nodes under that folder.
                             Numerical or high dimensional data nodes should be categorized using the binning option below.
                             For high dimensional data nodes, use the button below the box to select one or more genes.
-                            This variable is not obligatory.</div>
+                            This variable is not obligatory.</span>
                         <div id='divCategoryVariable' class="queryGroupIncludeLong divInputBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divCategoryVariable', true)">High Dimensional Data</button>
@@ -117,11 +117,11 @@
             <div class="three-layout-right">
                 <fieldset class="inputFields">
                     <h3>Censoring Variable</h3>
-                    <div class="divInputLabel">
+                    <span>
                         Drag the item for which to perform censoring in the analysis into this box. For example, when
                         performing Overall survival analysis, drag 'Survival status = alive' into this box.
-                        This variable is not obligatory.
-                    </div>
+                        This variable is not obligatory.<br /><br /><br /><br />
+                    </span>
                     <div id='divCensoringVariable' class="queryGroupIncludeLong divInputBox"></div>
                     <div class="highDimBtns">
                         <button type="button" onclick="survivalAnalysisView.clear_high_dimensional_input('divCensoringVariable')">Clear</button>
