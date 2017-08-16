@@ -24,8 +24,8 @@
                     <div class="highDimContainer">
                         <h3>Independent Variable</h3>
                         <span class="hd-notes">
-                            Drag a <b>numerical</b> or <b>high dimensional</b> concept from the Data Set Explorer Tree into the box below.
-                            <br><br><br><br><br><br><br><br>
+                            Drag a <b>numerical</b> or <b>high dimensional</b> data node from the Data Set Explorer Tree
+                            into the box below. For high dimensional data nodes, use the button below the box to select a gene.                            <br><br><br><br><br><br><br><br>
                         </span>
                         <div id='divIndependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
@@ -50,13 +50,13 @@
                     <div class="highDimContainer">
                         <h3>Outcome</h3>
                         <span class="hd-notes">
-                            For the binary response, among two possible outcomes (Commonly the generic terms success and
-                            failure are used for these two outcomes). Drag the two related <b>categorical concepts</b>
-                            from the tree into the box below (for example, Subjects with Malignant Vs. Subjects with
-                            Benign Tumors). A folder may be dragged in to include the two leaf nodes under that folder.
-                            Or a continuous of high dimensional variable may be selected and categorized using the binning option below.
-                            <br> <i>NOTE: The top concept or the first bin will always be designated a value of 1 (success) and
-                            the other a value of 0 (failure).</i>
+                            For the binary response, among two possible outcomes, drag two related <b>categorical</b> data nodes
+                            from the tree into the box below (commonly the generic terms success and failure are used
+                            for these two outcomes, or for example Subjects with Malignant vs. Subjects with Benign Tumors).
+                            A folder may be dragged in to include the two leaf nodes under that folder.
+                            Numerical or high dimensional data nodes should be categorized using the binning option below.
+                            For high dimensional data nodes, use the button below the box to select a gene.
+                            <br> <i>NOTE: The top concept or the first bin will always be designated a value of 1 (success) and the other a value of 0 (failure).</i>
                         </span>
                         <div id='divGroupByVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">

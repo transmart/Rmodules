@@ -19,7 +19,9 @@
         <fieldset class="inputFields">
 
             <div class="highDimContainer">
-                <span>Select a continuous variable from the Data Set Explorer Tree and drag it into the box.</span>
+                <span>
+                    Select a <b>numerical</b> data node from the Data Set Explorer Tree and drag it into the box.
+                </span>
                 <div id='divDataNode' class="queryGroupIncludeSmall highDimBox"></div>
                 <div class="highDimBtns">
                     <button type="button" onclick="waterfallView.clear_high_dimensional_input('divDataNode');">Clear</button>

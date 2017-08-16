@@ -16,7 +16,7 @@
 
             %{--High dimensional input--}%
             <div class="highDimContainer">
-                <span>Select a High Dimensional Data node from the Data Set Explorer Tree and drag it into the box.</span>
+            <span>Select a <b>high dimensional</b> data node from the Data Set Explorer Tree and drag it into the box. If desired, use the High Dimensional Data button below the box to select one or more genes.</span>
                 <div id='divIndependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                 <div class="highDimBtns">
                     <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divIndependentVariable')">High Dimensional Data</button>

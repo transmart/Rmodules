@@ -29,8 +29,8 @@
                           %{--high dimensional node. The concepts must come from a data node (Biomarker Data or Clinical--}%
                         %{--Data).--}%
 
-                          Drag one or multiple numerical or high dimensional nodes from the tree into box below.
-
+                          Drag one or multiple <b>numerical</b> or <b>high dimensional</b> data nodes from the Data Set Explorer Tree into the box.
+                          For high dimensional data nodes, use the button below the box to select one or more genes.
                         </span>
                         <div id='divDependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
@@ -62,8 +62,9 @@
                           %{--subjects into groups (for example, Treatment Groups). A folder may be dragged--}%
                           %{--in to include all leaf nodes under that folder. Each group will be plotted as a--}%
                           %{--distinct line on the graph.--}%
-                          Drag one or multiple nodes from the tree into box below. Node should be categorical
-                          (Numerical or High Dimensional with binning).
+                          Drag one or multiple <b>categorical</b> nodes from the Data Set Explorer Tree into the box.
+                          Numerical or high dimensional data nodes should be categorized using the binning option below.
+                          For high dimensional data nodes, use the button below the box to select one or more genes.
                         </span>
                         <div id='divGroupByVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">

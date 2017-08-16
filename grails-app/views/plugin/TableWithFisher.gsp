@@ -26,9 +26,12 @@
                     %{--Independent variable--}%
                     <div class="highDimContainer">
                         <h3>Independent Variable</h3>
-                        <span class="hd-notes">Select two or more variables from the Data Set Explorer Tree and drag
-                        them into the box. A continuous variable may be selected and categorized by enabling the
-                        "Binning" below.</span>
+                        <span class="hd-notes">
+                            Drag two or more <b>categorical</b> data nodes from the Data Set Explorer Tree into the box.
+                            A folder may be dragged in to include the leaf nodes under that folder.
+                            Numerical or high dimensional data nodes should be categorized using the binning option below.
+                            For high dimensional data nodes, use the button below the box to select one or more genes.
+                        </span>
                         <div id='divIndependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divIndependentVariable', true)">High Dimensional Data</button>
@@ -109,8 +112,12 @@
                     %{--Dependent variable--}%
                     <div class="highDimContainer">
                         <h3>Dependent Variable</h3>
-                        <span class="hd-notes">Select two or more variables from the Data Set Explorer Tree and drag them into the box.
-                        A continuous variable may be selected and categorized by enabling the "Binning" below.</span>
+                        <span class="hd-notes">
+                            Drag two or more <b>categorical</b> data nodes from the Data Set Explorer Tree into the box.
+                            A folder may be dragged in to include the leaf nodes under that folder.
+                            Numerical or high dimensional data nodes should be categorized using the binning option below.
+                            For high dimensional data nodes, use the button below the box to select one or more genes.
+                        </span>
                         <div id='divDependentVariable' class="queryGroupIncludeSmall highDimBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divDependentVariable', true)">High Dimensional Data</button>

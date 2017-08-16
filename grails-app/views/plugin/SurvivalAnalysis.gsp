@@ -39,10 +39,12 @@
                 <fieldset class="inputFields">
                     <div class="highDimContainer">
                         <h3>Category</h3>
-                        <div class="divInputLabel">Select a variable on which you would like to sort the cohort and
-                        drag it into the box. For example, "Cancer Stage".  If this variable is continuous (e.g. Age),
-                        then it should be "binned" using the option below.
-                        This variable is not required.</div>
+                        <div class="divInputLabel">
+                            Select two or more related <b>categorical</b> data nodes on which you would like to sort the cohort and drag it into the box.
+                            For example, "Cancer Stage I and II". A folder may be dragged in to include the leaf nodes under that folder.
+                            Numerical or high dimensional data nodes should be categorized using the binning option below.
+                            For high dimensional data nodes, use the button below the box to select one or more genes.
+                            This variable is not obligatory.</div>
                         <div id='divCategoryVariable' class="queryGroupIncludeLong divInputBox"></div>
                         <div class="highDimBtns">
                             <button type="button" onclick="highDimensionalData.gather_high_dimensional_data('divCategoryVariable', true)">High Dimensional Data</button>
