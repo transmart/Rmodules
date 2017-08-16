@@ -36,9 +36,8 @@
                     <option value="=">=</option>
                     <option value="&gt;">&gt;</option>
                     <option value="&gt;=">&gt;=</option>
-                </select>
-                <input id="txtLowRange">
-
+                </select><input id="txtLowRange">
+                <br />
                 <label for="selHighRange">High Range </label>
                 <select id="selHighRange">
                     <option value="&gt;" selected="selected">&gt;</option>
@@ -46,8 +45,7 @@
                     <option value="&lt;">&lt;</option>
                     <option value="&lt;=">&lt;=</option>
                     <option value="=">=</option>
-                </select>
-                <input id="txtHighRange">
+                </select><input id="txtHighRange">
             </fieldset>
 
         </fieldset>
