@@ -42,7 +42,7 @@ class LogisticRegression extends AbstractAnalysisJob {
     }
 
     private void configureIndependentVariableConfigurator() {
-        independentVariableConfigurator.header = 'Y'
+        independentVariableConfigurator.header = 'X'
         independentVariableConfigurator.setKeys('independent')
         independentVariableConfigurator.projection = Projection.LOG_INTENSITY_PROJECTION
         independentVariableConfigurator.multiRow   = true
@@ -50,7 +50,7 @@ class LogisticRegression extends AbstractAnalysisJob {
 
     private void configureOutcomeVariableConfigurator() {
 
-        outcomeVariableConfigurator.header = 'X'
+        outcomeVariableConfigurator.header = 'Y'
         outcomeVariableConfigurator.setKeys('groupBy')
         outcomeVariableConfigurator.projection          = Projection.LOG_INTENSITY_PROJECTION
         outcomeVariableConfigurator.multiRow            = true
